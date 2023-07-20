@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "palmpharm-server"
+version = "0.1.0"
+description = ""
+authors = ["ffenland <ffenland@gmail.com>"]
+readme = "README.md"
+packages = [{include = "palmpharm_server"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+django = "^4.2.3"
+djangorestframework = "^3.14.0"
+requests = "^2.31.0"
+django-cors-headers = "^4.2.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
