@@ -69,7 +69,7 @@ class User(AbstractUser):
         max_length=10,
         null=True,
     )
-    # WorkingSchedule one to many
+    # Schedule one to many
 
     # for newbie
     is_incomplete = models.BooleanField(default=True)

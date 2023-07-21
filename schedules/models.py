@@ -27,12 +27,28 @@ class Schedule(CommonPKModel):
     days = models.ManyToManyField(
         "schedules.Day",
     )
+
+    def __str__(self):
+        return f"{self.user.username}'s schedule"
+
+
+class Resume(CommonPKModel):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
     )
-    is_resume = models.BooleanField(default=True)
+    schedule = models.ManyToManyField(
+        "schedules.Schedule",
+    )
     description = models.TextField()
 
-    def __str__(self):
-        return f"{self.user.username}'s schedule"
+
+class Recruit(CommonPKModel):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+    schedule = models.ManyToManyField(
+        "schedules.Schedule",
+    )
+    description = models.TextField()

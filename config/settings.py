@@ -40,6 +40,7 @@ BASIC_APPS = [
 ]
 THIRD_PARTY_APPS = [
     "rest_framework",
+    "daphne",
 ]
 CUSTOM_APPS = [
     "users.apps.UsersConfig",
@@ -47,9 +48,10 @@ CUSTOM_APPS = [
     "common.apps.CommonConfig",
     "medias.apps.MediasConfig",
     "schedules.apps.SchedulesConfig",
+    "chat.apps.ChatConfig",
 ]
 
-INSTALLED_APPS = BASIC_APPS + THIRD_PARTY_APPS + CUSTOM_APPS
+INSTALLED_APPS = THIRD_PARTY_APPS + BASIC_APPS + CUSTOM_APPS
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -80,7 +82,14 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "config.wsgi.application"
+ASGI_APPLICATION = "config.asgi.application"
 
+# WebSocket
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",  # 또는 Redis를 사용할 수도 있습니다.
+    },
+}
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
