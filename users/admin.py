@@ -14,14 +14,20 @@ class CustomUserAdmin(UserAdmin):
                 "fields": (
                     "username",
                     "email",
-                    "is_incomplete",
+                    "is_owner",
+                    "is_active",
                 )
             },
         ),
         (
             ("Personal info"),
             {
-                "fields": ("phone", "naver_id", "kakao_id", "is_owner"),
+                "fields": (
+                    "phone",
+                    "naver_id",
+                    "kakao_id",
+                    "license_img",
+                ),
             },
         ),
         (
@@ -48,7 +54,6 @@ class CustomUserAdmin(UserAdmin):
             ("Permissions"),
             {
                 "fields": (
-                    "is_active",
                     "is_staff",
                     "is_superuser",
                     "groups",

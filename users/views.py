@@ -35,6 +35,9 @@ class NaverLogin(APIView):
                 },
             )
             user_data = result_data.json()
+            # test
+            print(user_data)
+            # test end
             if user_data.get("resultcode") == "00":
                 email = user_data.get("response").get("email")
                 try:
@@ -84,6 +87,7 @@ class KakaoLogin(APIView):
                 },
             )
             user_data = result_data.json()
+            print(user_data)
             if (
                 user_data.get("kakao_account").get("email")
                 and user_data.get("kakao_account").get("is_email_verified") == True
