@@ -15,7 +15,7 @@ class CustomUserAdmin(UserAdmin):
                     "username",
                     "email",
                     "is_owner",
-                    "is_active",
+                    "is_complete",
                 )
             },
         ),
@@ -56,6 +56,7 @@ class CustomUserAdmin(UserAdmin):
                 "fields": (
                     "is_staff",
                     "is_superuser",
+                    "is_active",
                     "groups",
                     "user_permissions",
                 ),

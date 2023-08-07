@@ -8,9 +8,26 @@ from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnl
 from rest_framework.exceptions import ParseError, NotFound
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK
 
-from .serializers import PrivateUserSerializer, PublicUserSerializer
+from .serializers import MeUserSerializer, PublicUserSerializer
 from .models import User
 import requests
+
+
+## util
+def make_ran_username():
+    while True:
+        ran_name = f"{get_random_string(length=6)}_N"
+        if not User.objects.filter(username=ran_name).exists():
+            return ran_name
+
+
+class Me(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        serializer = MeUserSerializer(user)
+        return Response(serializer.data)
 
 
 class NaverLogin(APIView):
@@ -35,19 +52,19 @@ class NaverLogin(APIView):
                 },
             )
             user_data = result_data.json()
-            # test
-            print(user_data)
-            # test end
+
             if user_data.get("resultcode") == "00":
                 email = user_data.get("response").get("email")
+                naver_id = user_data.get("response").get("id")
                 try:
                     user = User.objects.get(email=email)
                     login(request, user)
                 except User.DoesNotExist:
                     # signup
                     user = User.objects.create(
-                        username=f"{get_random_string(length=6)}_N",
+                        username=make_ran_username(),
                         email=email,
+                        naver_id=naver_id,
                     )
                     user.set_unusable_password()
                     user.save()
@@ -87,23 +104,22 @@ class KakaoLogin(APIView):
                 },
             )
             user_data = result_data.json()
-            print(user_data)
             if (
                 user_data.get("kakao_account").get("email")
                 and user_data.get("kakao_account").get("is_email_verified") == True
             ):
+                # email 값이 존재하고, email이 verified된 경우
                 email = user_data.get("kakao_account").get("email")
+                kakao_id = user_data.get("id")
                 try:
                     user = User.objects.get(email=email)
                     login(request, user)
                 except User.DoesNotExist:
                     # signup
                     user = User.objects.create(
-                        username=f"{get_random_string(length=6)}_K",
+                        username=make_ran_username(),
                         email=email,
-                        avatar=user_data.get("kakao_account")
-                        .get("profile")
-                        .get("profile_image_url"),
+                        kakao_id=kakao_id,
                     )
                     user.set_unusable_password()
                     user.save()
@@ -116,3 +132,25 @@ class KakaoLogin(APIView):
                 )
         except Exception:
             return Response(status=HTTP_400_BAD_REQUEST)
+
+
+class LogOut(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        logout(request)
+        return Response({"ok": "Bye Bye"})
+
+
+class PublicUser(APIView):
+    permission_classes = [
+        IsAuthenticatedOrReadOnly,
+    ]
+
+    def get(self, request, username):
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            raise NotFound
+        serializer = PublicUserSerializer(user)
+        return Response(serializer.data)

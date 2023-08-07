@@ -13,6 +13,18 @@ class TinyUserSerializer(ModelSerializer):
         )
 
 
+class MeUserSerializer(ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            "is_complete",
+            "is_owner",
+            "id",
+            "username",
+            "avatar",
+        )
+
+
 class PrivateUserSerializer(ModelSerializer):
     class Meta:
         model = User
@@ -24,6 +36,7 @@ class PrivateUserSerializer(ModelSerializer):
             "is_superuser",
             "is_staff",
             "is_active",
+            "is_complete",
             "date_joined",
             "last_login",
             "groups",
@@ -38,8 +51,5 @@ class PublicUserSerializer(ModelSerializer):
             "username",
             "email",
             "avatar",
-            "isHost",
-            "gender",
-            "language",
-            "currency",
+            "is_host",
         )
