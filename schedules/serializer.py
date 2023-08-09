@@ -1,20 +1,17 @@
-from rest_framework.serializers import ModelSerializer, SerializerMethodField
+from rest_framework.serializers import ModelSerializer
 from .models import Day, Schedule
 
 
 class DaySerializer(ModelSerializer):
     class Meta:
         model = Day
-        fields = (
-            "date",
-            "am",
-            "pm",
-        )
+        fields = "__all__"
 
 
-class SmallScheduleSerializer(ModelSerializer):
-    day_set = DaySerializer(
+class ScheduleSerializer(ModelSerializer):
+    days = DaySerializer(
         many=True,
+        read_only=True,
     )
 
     class Meta:

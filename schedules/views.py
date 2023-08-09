@@ -1,18 +1,93 @@
 from django.db import transaction
 from django.utils import timezone
+from django.db.models import Count
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
-from rest_framework.status import HTTP_204_NO_CONTENT, HTTP_200_OK, HTTP_400_BAD_REQUEST
+from rest_framework.status import (
+    HTTP_204_NO_CONTENT,
+    HTTP_200_OK,
+    HTTP_201_CREATED,
+    HTTP_400_BAD_REQUEST,
+)
 from rest_framework.exceptions import (
     NotFound,
     NotAuthenticated,
     ParseError,
     PermissionDenied,
 )
-from .models import Schedule
+from .models import Schedule, Day
+from .serializer import DaySerializer, ScheduleSerializer
+
+
+def str_to_bool(value):
+    return value.lower() == "true"
+
+
+def get_day_ids(data):
+    """Day id의 배열을 반환하거나 빈 배열을 반환함."""
+    print("from fnc", data)
+    if isinstance(data, list) or isinstance(data, tuple):
+        day_ids = []
+        for item in data:
+            serializer = DaySerializer(data=item)
+            if serializer.is_valid():
+                print("VALID")
+                date = serializer.validated_data.get("date")
+                am = serializer.validated_data.get("am")
+                pm = serializer.validated_data.get("pm")
+
+                day, created = Day.objects.get_or_create(date=date, am=am, pm=pm)
+                print("from fnc day", day)
+                day_ids.append(day.id)
+            else:
+                print(serializer.errors)
+
+        return day_ids
+    else:
+        return []
+
+
+class TestView(APIView):
+    def get(self, request):
+        data = [
+            {"date": "20230809", "am": "False", "pm": "True"},
+            {"date": "20230812", "am": "True", "pm": "True"},
+            {"date": "20230811", "am": "True", "pm": "True"},
+            {"date": "20230813", "am": "True", "pm": "False"},
+        ]
+        for item in data:
+            item["am"] = str_to_bool(item["am"])
+            item["pm"] = str_to_bool(item["pm"])
+        get_day_ids(data)
+        return Response(status=HTTP_200_OK)
+
 
 # Create your views here.
+class ScheduleView(APIView):
+    def post(self, request):
+        data = request.data
+        for item in data:
+            item["am"] = str_to_bool(item["am"])
+            item["pm"] = str_to_bool(item["pm"])
+        day_id_list = get_day_ids(data)
+
+        print("DAY_LIST", day_id_list)
+        if len(day_id_list) != 0:
+            day_count = len(day_id_list)
+            day_list = Day.objects.filter(id__in=day_id_list)
+            schedule = (
+                Schedule.objects.annotate(day_count=Count("days"))
+                .filter(day_count=day_count, days__in=day_list)
+                .first()
+            )
+            if not schedule == None:
+                schedule = Schedule.objects.create()
+                schedule.days.add(*day_list)
+            serializer = ScheduleSerializer(schedule)
+            return Response(serializer.data)
+        else:
+            return Response({"error": "No data provided"}, status=HTTP_400_BAD_REQUEST)
 
 
 class ResumeList(APIView):

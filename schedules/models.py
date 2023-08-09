@@ -1,18 +1,30 @@
 from django.conf import settings
 from django.db import models
+from django.core.validators import RegexValidator
 from common.models import CommonPKModel
 
 # Create your models here.
 
 
 class Day(models.Model):
-    date = models.CharField(max_length=9)
+    date_validator = RegexValidator(
+        regex=r"^(?:\d{8}|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)$",
+        message="Date should be a valid 8-digit number or a day of the week.",
+    )
+
+    date = models.CharField(
+        max_length=9,
+        validators=[date_validator],
+    )
     am = models.BooleanField(
         default=True,
     )
     pm = models.BooleanField(
         default=True,
     )
+
+    class Meta:
+        unique_together = ["date", "am", "pm"]
 
     def __str__(self):
         if self.am and self.pm:
@@ -21,6 +33,9 @@ class Day(models.Model):
             return f"{self.date} am"
         else:
             return f"{self.date} pm"
+
+    def is_regular(self):
+        return self.date.endswith("day")
 
 
 class Schedule(CommonPKModel):

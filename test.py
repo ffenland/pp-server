@@ -28,3 +28,14 @@
         "email": "ffenland@gmail.com",
     },
 }
+[
+    {"date": "20230809", "am": False, "pm": True},
+    {"date": "20230812", "am": True, "pm": True},
+    {"date": "20230811", "am": True, "pm": True},
+    {"date": "20230813", "am": True, "pm": False},
+]
+
+{"date": "20230809", "am": False, "pm": True}
+{"date": "20230812", "am": True, "pm": True}
+{"date": "20230811", "am": True, "pm": True}
+{"date": "20230813", "am": True, "pm": False}
