@@ -43,9 +43,6 @@ class Schedule(CommonPKModel):
         "schedules.Day",
     )
 
-    def __str__(self):
-        return f"{self.user.username}'s schedule"
-
 
 class Resume(CommonPKModel):
     user = models.ForeignKey(

@@ -26,7 +26,6 @@ def str_to_bool(value):
 
 def get_day_ids(data):
     """Day id의 배열을 반환하거나 빈 배열을 반환함."""
-    print("from fnc", data)
     if isinstance(data, list) or isinstance(data, tuple):
         day_ids = []
         for item in data:
@@ -66,15 +65,20 @@ class ScheduleView(APIView):
         if len(day_id_list) != 0:
             day_count = len(day_id_list)
             day_list = Day.objects.filter(id__in=day_id_list)
-            schedule = (
-                Schedule.objects.annotate(day_count=Count("days"))
-                .filter(day_count=day_count, days__in=day_list)
-                .first()
+            schedule = Schedule.objects.annotate(day_count=Count("days")).filter(
+                day_count=day_count
             )
-            if not schedule == None:
+
+            for day in day_list:
+                schedule = schedule.filter(days=day)
+            print(schedule)
+            if len(schedule) == 0:
                 schedule = Schedule.objects.create()
                 schedule.days.add(*day_list)
-            serializer = ScheduleSerializer(schedule)
+
+            print("SC", schedule)
+            serializer = ScheduleSerializer(schedule.first())
+            print(serializer.data)
             return Response(serializer.data)
         else:
             return Response(

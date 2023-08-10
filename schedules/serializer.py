@@ -21,3 +21,8 @@ class ScheduleSerializer(ModelSerializer):
     class Meta:
         model = Schedule
         fields = "__all__"
+
+    # def to_representation(self, instance):
+    #     data = super().to_representation(instance)
+    #     print("Serialized Data:", data)  # 디버깅 출력 추가
+    #     return data
