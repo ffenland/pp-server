@@ -32,34 +32,28 @@ def get_day_ids(data):
         for item in data:
             serializer = DaySerializer(data=item)
             if serializer.is_valid():
-                print("VALID")
                 date = serializer.validated_data.get("date")
                 am = serializer.validated_data.get("am")
                 pm = serializer.validated_data.get("pm")
-
                 day, created = Day.objects.get_or_create(date=date, am=am, pm=pm)
-                print("from fnc day", day)
                 day_ids.append(day.id)
             else:
-                print(serializer.errors)
-
+                return Response(serializer.errors)
         return day_ids
     else:
         return []
 
 
 class TestView(APIView):
-    def get(self, request):
+    def post(self, request):
         data = [
             {"date": "20230809", "am": "False", "pm": "True"},
             {"date": "20230812", "am": "True", "pm": "True"},
             {"date": "20230811", "am": "True", "pm": "True"},
             {"date": "20230813", "am": "True", "pm": "False"},
         ]
-        for item in data:
-            item["am"] = str_to_bool(item["am"])
-            item["pm"] = str_to_bool(item["pm"])
-        get_day_ids(data)
+
+        get_day_ids(request.data)
         return Response(status=HTTP_200_OK)
 
 
@@ -67,12 +61,8 @@ class TestView(APIView):
 class ScheduleView(APIView):
     def post(self, request):
         data = request.data
-        for item in data:
-            item["am"] = str_to_bool(item["am"])
-            item["pm"] = str_to_bool(item["pm"])
         day_id_list = get_day_ids(data)
 
-        print("DAY_LIST", day_id_list)
         if len(day_id_list) != 0:
             day_count = len(day_id_list)
             day_list = Day.objects.filter(id__in=day_id_list)
@@ -87,7 +77,13 @@ class ScheduleView(APIView):
             serializer = ScheduleSerializer(schedule)
             return Response(serializer.data)
         else:
-            return Response({"error": "No data provided"}, status=HTTP_400_BAD_REQUEST)
+            return Response(
+                {
+                    "ok": False,
+                    "error": "No data provided",
+                },
+                status=HTTP_400_BAD_REQUEST,
+            )
 
 
 class ResumeList(APIView):

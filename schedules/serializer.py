@@ -3,6 +3,10 @@ from .models import Day, Schedule
 
 
 class DaySerializer(ModelSerializer):
+    def get_unique_together_validators(self):
+        """Overriding method to disable unique together checks"""
+        return []
+
     class Meta:
         model = Day
         fields = "__all__"
