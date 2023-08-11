@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Schedule, Day
+from .models import Schedule, Day, Recruit, Resume
 
 # Register your models here.
 
@@ -10,3 +10,5 @@ class DayAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Schedule)
+admin.site.register(Resume)
+admin.site.register(Recruit)

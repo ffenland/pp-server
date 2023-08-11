@@ -16,8 +16,8 @@ from rest_framework.exceptions import (
     ParseError,
     PermissionDenied,
 )
-from .models import Schedule, Day
-from .serializer import DaySerializer, ScheduleSerializer
+from .models import Schedule, Day, Resume, Recruit
+from .serializer import DaySerializer, ScheduleSerializer, RecruitSerializer, ResumeSerializer
 
 
 def str_to_bool(value):
@@ -43,14 +43,40 @@ def get_day_ids(data):
         return []
 
 
+def get_schedule(data):
+    day_id_list = get_day_ids(data)
+    if len(day_id_list) != 0:
+        day_count = len(day_id_list)
+        day_list = Day.objects.filter(id__in=day_id_list)
+        schedule = Schedule.objects.annotate(day_count=Count("days")).filter(
+            day_count=day_count
+        )
+        for day in day_list:
+            schedule = schedule.filter(days=day)
+        schedule = schedule.first()
+        if schedule == None:
+            schedule = Schedule.objects.create()
+            schedule.days.add(*day_list)
+        # Need only SC id.
+        serializer = ScheduleSerializer(schedule)
+        return serializer.data
+    else:
+        return None
+
+
+
+
 class TestView(APIView):
     def post(self, request):
-        data = [
-            {"date": "20230809", "am": "False", "pm": "True"},
-            {"date": "20230812", "am": "True", "pm": "True"},
-            {"date": "20230811", "am": "True", "pm": "True"},
-            {"date": "20230813", "am": "True", "pm": "False"},
-        ]
+        {
+            "description": "blabla",
+            "days": [
+                {"date": "20230809", "am": "False", "pm": "True"},
+                {"date": "20230812", "am": "True", "pm": "True"},
+                {"date": "20230811", "am": "True", "pm": "True"},
+                {"date": "20230813", "am": "True", "pm": "False"},
+            ],
+        }
 
         get_day_ids(request.data)
         return Response(status=HTTP_200_OK)
@@ -59,27 +85,24 @@ class TestView(APIView):
 # Create your views here.
 class ScheduleView(APIView):
     def post(self, request):
+        """receive days list return schedule id"""
         data = request.data
         day_id_list = get_day_ids(data)
-
         if len(day_id_list) != 0:
             day_count = len(day_id_list)
             day_list = Day.objects.filter(id__in=day_id_list)
             schedule = Schedule.objects.annotate(day_count=Count("days")).filter(
                 day_count=day_count
             )
-
             for day in day_list:
                 schedule = schedule.filter(days=day)
-            print(schedule)
-            if len(schedule) == 0:
+            schedule = schedule.first()
+            if schedule == None:
                 schedule = Schedule.objects.create()
                 schedule.days.add(*day_list)
-
-            print("SC", schedule)
-            serializer = ScheduleSerializer(schedule.first())
-            print(serializer.data)
-            return Response(serializer.data)
+            # Need only SC id.
+            serializer = ScheduleSerializer(schedule)
+            return Response({"ok": True, "schedule": serializer.data})
         else:
             return Response(
                 {
@@ -90,12 +113,59 @@ class ScheduleView(APIView):
             )
 
 
-class ResumeList(APIView):
+class ResumeView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get(self, request):
-        region_code = request.user.address_sgg_code
-        if not region_code or len(region_code) != 5:
-            region_code = "11680"  # seoul gangnam-gu
+        type = request.query_params.get("type")
+        if type not in ["1", "2", "3"]:
+            return Response({"ok": False})
+        if type == 1:
+            resumes = Resume.objects.filter(is_recruit=False,)
+            serializer = ResumeSerializer(resumes, many=True)
+            return Response({ok:True, resumes:})
+        return Response({"ok": True})
 
-        return Response({"ok": True, "region_code": region_code})
+    def post(self, request):
+        is_recruit = request.query_params.get("type")
+        if is_recruit not in [1, 2, 3]:
+            return Response({"ok": False})
+        description = request.data.get("description")
+        days = request.data.get("days")
+        schedule = get_schedule(days)
+
+        if description and len(description) > 10 and schedule:
+            schedule_id = schedule.get("id")
+            user = request.user
+            obj, created = Recruit.objects.update_or_create(
+                user=user,
+                schedule_id=schedule_id,
+                defaults={"description": description},
+            )
+
+            serializer = RecruitSerializer(obj)
+            return Response(serializer.data)
+        return Response({"ok": True})
+
+
+class RecruitView(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def post(self, request):
+        description = request.data.get("description")
+
+        days = request.data.get("days")
+        schedule = get_schedule(days)
+
+        if description and len(description) > 10 and schedule:
+            schedule_id = schedule.get("id")
+            user = request.user
+            obj, created = Recruit.objects.update_or_create(
+                user=user,
+                schedule_id=schedule_id,
+                defaults={"description": description},
+            )
+
+            serializer = RecruitSerializer(obj)
+            return Response(serializer.data)
+        return Response({"ok": True})

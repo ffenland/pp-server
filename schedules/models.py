@@ -49,10 +49,13 @@ class Resume(CommonPKModel):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
     )
-    schedule = models.ManyToManyField(
+    schedule = models.ForeignKey(
         "schedules.Schedule",
+        null=True,
+        on_delete=models.SET_NULL,
     )
     description = models.TextField()
+    is_recruit = models.BooleanField(default=False)
 
 
 class Recruit(CommonPKModel):
@@ -60,7 +63,9 @@ class Recruit(CommonPKModel):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
     )
-    schedule = models.ManyToManyField(
+    schedule = models.ForeignKey(
         "schedules.Schedule",
+        null=True,
+        on_delete=models.SET_NULL,
     )
     description = models.TextField()
