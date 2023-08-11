@@ -16,8 +16,12 @@ from rest_framework.exceptions import (
     ParseError,
     PermissionDenied,
 )
-from .models import Schedule, Day, Resume, Recruit
-from .serializer import DaySerializer, ScheduleSerializer, RecruitSerializer, ResumeSerializer
+from .models import Schedule, Day, Resume
+from .serializer import (
+    DaySerializer,
+    ScheduleSerializer,
+    ResumeSerializer,
+)
 
 
 def str_to_bool(value):
@@ -62,8 +66,6 @@ def get_schedule(data):
         return serializer.data
     else:
         return None
-
-
 
 
 class TestView(APIView):
@@ -117,23 +119,20 @@ class ResumeView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get(self, request):
-        type = request.query_params.get("type")
-        if type not in ["1", "2", "3"]:
-            return Response({"ok": False})
-        if type == 1:
-            resumes = Resume.objects.filter(is_recruit=False,)
-            serializer = ResumeSerializer(resumes, many=True)
-            return Response({ok:True, resumes:})
-        return Response({"ok": True})
+        recruit_param = request.query_params.get("is_recruit")
+        is_recruit = recruit_param and recruit_param.lower() == "true"
+        if is_recruit:
+            resumes = Resume.objects.filter(is_recruit=True)
+        else:
+            resumes = Resume.objects.filter(is_recruit=False)
+        serializer = ResumeSerializer(resumes, many=True)
+        return Response({"ok": True, "resumes": serializer.data})
 
     def post(self, request):
-        is_recruit = request.query_params.get("type")
-        if is_recruit not in [1, 2, 3]:
-            return Response({"ok": False})
+        is_recruit = request.data.get("isRecruit")
         description = request.data.get("description")
         days = request.data.get("days")
         schedule = get_schedule(days)
-
         if description and len(description) > 10 and schedule:
             schedule_id = schedule.get("id")
             user = request.user
@@ -141,31 +140,10 @@ class ResumeView(APIView):
                 user=user,
                 schedule_id=schedule_id,
                 defaults={"description": description},
+                is_recruit=is_recruit,
             )
 
             serializer = RecruitSerializer(obj)
-            return Response(serializer.data)
-        return Response({"ok": True})
-
-
-class RecruitView(APIView):
-    permission_classes = [IsAuthenticatedOrReadOnly]
-
-    def post(self, request):
-        description = request.data.get("description")
-
-        days = request.data.get("days")
-        schedule = get_schedule(days)
-
-        if description and len(description) > 10 and schedule:
-            schedule_id = schedule.get("id")
-            user = request.user
-            obj, created = Recruit.objects.update_or_create(
-                user=user,
-                schedule_id=schedule_id,
-                defaults={"description": description},
-            )
-
-            serializer = RecruitSerializer(obj)
-            return Response(serializer.data)
-        return Response({"ok": True})
+            return Response({"ok": True, "resume": serializer.data})
+        else:
+            raise ParseError

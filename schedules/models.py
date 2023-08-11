@@ -56,16 +56,3 @@ class Resume(CommonPKModel):
     )
     description = models.TextField()
     is_recruit = models.BooleanField(default=False)
-
-
-class Recruit(CommonPKModel):
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-    )
-    schedule = models.ForeignKey(
-        "schedules.Schedule",
-        null=True,
-        on_delete=models.SET_NULL,
-    )
-    description = models.TextField()

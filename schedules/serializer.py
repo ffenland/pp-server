@@ -1,5 +1,5 @@
 from rest_framework.serializers import ModelSerializer
-from .models import Day, Schedule, Resume, Recruit
+from .models import Day, Schedule, Resume
 
 
 class DaySerializer(ModelSerializer):
@@ -32,14 +32,6 @@ class ScheduleWithDaysSerializer(ModelSerializer):
     #     data = super().to_representation(instance)
     #     print("Serialized Data:", data)  # 디버깅 출력 추가
     #     return data
-
-
-class RecruitSerializer(ModelSerializer):
-    schedule = ScheduleWithDaysSerializer()
-
-    class Meta:
-        model = Recruit
-        fields = "__all__"
 
 
 class ResumeSerializer(ModelSerializer):
