@@ -26,7 +26,7 @@ class ScheduleWithDaysSerializer(ModelSerializer):
 
     class Meta:
         model = Schedule
-        fields = "__all__"
+        fields = ("days",)
 
     # def to_representation(self, instance):
     #     data = super().to_representation(instance)
@@ -35,6 +35,14 @@ class ScheduleWithDaysSerializer(ModelSerializer):
 
 
 class ResumeSerializer(ModelSerializer):
+    schedule = ScheduleWithDaysSerializer()
+
+    class Meta:
+        model = Resume
+        exclude = ("description",)
+
+
+class ResumeDetailSerializer(ModelSerializer):
     schedule = ScheduleWithDaysSerializer()
 
     class Meta:

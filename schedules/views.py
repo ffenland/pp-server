@@ -1,5 +1,3 @@
-from django.db import transaction
-from django.utils import timezone
 from django.db.models import Count
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
@@ -21,6 +19,7 @@ from .serializer import (
     DaySerializer,
     ScheduleSerializer,
     ResumeSerializer,
+    ResumeDetailSerializer,
 )
 
 
@@ -78,6 +77,7 @@ class TestView(APIView):
                 {"date": "20230811", "am": "True", "pm": "True"},
                 {"date": "20230813", "am": "True", "pm": "False"},
             ],
+            "is_recruit": "False",
         }
 
         get_day_ids(request.data)
@@ -90,6 +90,7 @@ class ScheduleView(APIView):
         """receive days list return schedule id"""
         data = request.data
         day_id_list = get_day_ids(data)
+
         if len(day_id_list) != 0:
             day_count = len(day_id_list)
             day_list = Day.objects.filter(id__in=day_id_list)
@@ -136,14 +137,53 @@ class ResumeView(APIView):
         if description and len(description) > 10 and schedule:
             schedule_id = schedule.get("id")
             user = request.user
-            obj, created = Recruit.objects.update_or_create(
+            obj, created = Resume.objects.update_or_create(
                 user=user,
                 schedule_id=schedule_id,
                 defaults={"description": description},
                 is_recruit=is_recruit,
             )
 
-            serializer = RecruitSerializer(obj)
+            serializer = ResumeSerializer(obj)
             return Response({"ok": True, "resume": serializer.data})
         else:
             raise ParseError
+
+
+class ResumeDetailView(APIView):
+    def get_object(self, pk):
+        try:
+            resume = Resume.objects.get(pk=pk)
+            return resume
+        except Resume.DoesNotExist:
+            raise NotFound
+
+    def get(self, request, pk):
+        resume = self.get_object(pk)
+        serializer = ResumeDetailSerializer(resume)
+        return Response({"ok": True, "resume": serializer.data})
+
+    def put(self, request, pk):
+        description = request.data.get("description")
+        days = request.data.get("days")
+        resume = self.get_object(pk)
+        data = {}
+
+        if description is None and days is None:
+            return Response({"ok": False}, status=HTTP_204_NO_CONTENT)
+        else:
+            if days:
+                schedule = get_schedule(days)
+                resume.schedule = schedule
+            if description:
+                data["description"] = description
+            serializer = ResumeDetailSerializer(
+                resume,
+                data=data,
+                partial=True,
+            )
+            if serializer.is_valid():
+                serializer.save()
+                return Response({"ok": True})
+            else:
+                return Response({"ok": False, "error": serializer.errors})
