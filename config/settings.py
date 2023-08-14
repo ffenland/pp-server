@@ -53,6 +53,8 @@ CUSTOM_APPS = [
     "medias.apps.MediasConfig",
     "schedules.apps.SchedulesConfig",
     "chat.apps.ChatConfig",
+    "records.apps.RecordsConfig",
+    "posts.apps.PostsConfig",
 ]
 
 INSTALLED_APPS = THIRD_PARTY_APPS + BASIC_APPS + CUSTOM_APPS

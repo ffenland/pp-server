@@ -21,6 +21,7 @@ from .serializer import (
     ResumeSerializer,
     ResumeDetailSerializer,
 )
+from records.models import Record
 
 
 def str_to_bool(value):
@@ -61,8 +62,8 @@ def get_schedule(data):
             schedule = Schedule.objects.create()
             schedule.days.add(*day_list)
         # Need only SC id.
-        serializer = ScheduleSerializer(schedule)
-        return serializer.data
+
+        return schedule
     else:
         return None
 
@@ -85,42 +86,13 @@ class TestView(APIView):
 
 
 # Create your views here.
-class ScheduleView(APIView):
-    def post(self, request):
-        """receive days list return schedule id"""
-        data = request.data
-        day_id_list = get_day_ids(data)
-
-        if len(day_id_list) != 0:
-            day_count = len(day_id_list)
-            day_list = Day.objects.filter(id__in=day_id_list)
-            schedule = Schedule.objects.annotate(day_count=Count("days")).filter(
-                day_count=day_count
-            )
-            for day in day_list:
-                schedule = schedule.filter(days=day)
-            schedule = schedule.first()
-            if schedule == None:
-                schedule = Schedule.objects.create()
-                schedule.days.add(*day_list)
-            # Need only SC id.
-            serializer = ScheduleSerializer(schedule)
-            return Response({"ok": True, "schedule": serializer.data})
-        else:
-            return Response(
-                {
-                    "ok": False,
-                    "error": "No data provided",
-                },
-                status=HTTP_400_BAD_REQUEST,
-            )
 
 
 class ResumeView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get(self, request):
-        recruit_param = request.query_params.get("is_recruit")
+        recruit_param = request.query_params.get("isRecruit")
         is_recruit = recruit_param and recruit_param.lower() == "true"
         if is_recruit:
             resumes = Resume.objects.filter(is_recruit=True)
@@ -130,12 +102,13 @@ class ResumeView(APIView):
         return Response({"ok": True, "resumes": serializer.data})
 
     def post(self, request):
+        """Create or Update Resume"""
         is_recruit = request.data.get("isRecruit")
         description = request.data.get("description")
         days = request.data.get("days")
         schedule = get_schedule(days)
         if description and len(description) > 10 and schedule:
-            schedule_id = schedule.get("id")
+            schedule_id = schedule.id
             user = request.user
             obj, created = Resume.objects.update_or_create(
                 user=user,
@@ -145,7 +118,9 @@ class ResumeView(APIView):
             )
 
             serializer = ResumeSerializer(obj)
-            return Response({"ok": True, "resume": serializer.data})
+            return Response(
+                {"ok": True, "resume": serializer.data}, status=HTTP_201_CREATED
+            )
         else:
             raise ParseError
 
@@ -187,3 +162,71 @@ class ResumeDetailView(APIView):
                 return Response({"ok": True})
             else:
                 return Response({"ok": False, "error": serializer.errors})
+
+    def delete(self, request, pk):
+        resume = self.get_object(pk=pk)
+        if resume.user == request.user:
+            resume.delete()
+            return Response({"ok": True}, status=HTTP_204_NO_CONTENT)
+        else:
+            return Response({"ok": False}, status=HTTP_400_BAD_REQUEST)
+
+
+class ResumeRecord(APIView):
+    def get_object(self, pk):
+        try:
+            resume = Resume.objects.get(pk=pk)
+            return resume
+        except Resume.DoesNotExist:
+            raise NotFound
+
+    def get(self, request, pk):
+        kind_param = request.query_params.get("kind")
+        kind = kind_param and kind_param.lower()
+        resume = self.get_object(pk)
+        if kind not in [
+            "like",
+            "bad",
+            "fav",
+        ]:
+            return Response(
+                {"ok": False, "error": "Kind Error"},
+                status=HTTP_400_BAD_REQUEST,
+            )
+
+        record_count = resume.record_set.filter(kind=kind).count()
+        was_i = resume.record_set.filter(kind=kind, user=request.user).exists()
+
+        return Response(
+            {"ok": True, "data": {"count": record_count, "wasI": was_i}},
+        )
+
+    def post(self, request, pk):
+        kind_param = request.query_params.get("kind")
+        kind = kind_param and kind_param.lower()
+        resume = self.get_object(pk)
+        if kind not in [
+            "like",
+            "bad",
+            "fav",
+        ]:
+            return Response(
+                {"ok": False, "error": "Kind Error"},
+                status=HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            record = Record.objects.get(
+                user=request.user,
+                kind=kind,
+                resume=resume,
+            )
+            record.delete()
+            return Response({"ok": True})
+        except Record.DoesNotExist:
+            Record.objects.create(
+                user=request.user,
+                kind=kind,
+                resume=resume,
+            )
+            return Response({"ok": True})
