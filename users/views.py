@@ -154,3 +154,14 @@ class PublicUser(APIView):
             raise NotFound
         serializer = PublicUserSerializer(user)
         return Response(serializer.data)
+
+
+class TestLogin(APIView):
+    def post(self, request):
+        try:
+            user = User.objects.get(username="ffenland")
+        except User.DoesNotExist:
+            raise NotFound
+        print(user)
+        login(request, user)
+        return Response(status=HTTP_200_OK)

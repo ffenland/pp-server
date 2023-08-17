@@ -15,6 +15,7 @@ django-cors-headers = "^4.2.0"
 channels = {extras = ["daphne"], version = "^4.0.0"}
 selenium = "^4.10.0"
 django-environ = "^0.10.0"
+faker = "^19.3.0"
 
 
 [build-system]

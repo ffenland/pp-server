@@ -9,14 +9,14 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('medias', '0001_initial'),
-        ('pharmacies', '0001_initial'),
+        ('schedules', '0001_initial'),
+        ('records', '0001_initial'),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='photo',
-            name='pharmacy',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='pharmacies.pharmacy'),
+            model_name='record',
+            name='resume',
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='schedules.resume'),
         ),
     ]

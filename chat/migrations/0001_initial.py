@@ -13,13 +13,18 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Photo',
+            name='ChatMessage',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('message_body', models.TextField()),
+            ],
+        ),
+        migrations.CreateModel(
+            name='ChatRoom',
             fields=[
                 ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='만든날짜')),
                 ('updated_at', models.DateTimeField(auto_now=True, verbose_name='변경날짜')),
                 ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('cf_id', models.URLField()),
-                ('description', models.CharField(max_length=140)),
             ],
             options={
                 'abstract': False,
