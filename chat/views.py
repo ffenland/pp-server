@@ -44,7 +44,7 @@ class ChatRoomListView(APIView):
                         "avatar": partner.avatar,
                     },
                     "last_message": {
-                        "message": latest_message.message_body
+                        "message": latest_message.message_body[:40] + "..."
                         if latest_message
                         else "",
                         "created_at": latest_message.created_at

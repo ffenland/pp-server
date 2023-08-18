@@ -26,6 +26,9 @@ class ChatRoom(CommonPKModel, CommonModel):
         related_name="chat_member_two",
     )
 
+    def __str__(self):
+        return f"{self.first_user.username} & {self.second_user.username} Chat"
+
 
 class ChatMessage(CommonPKModel, CommonModel):
     chat_room = models.ForeignKey(
@@ -47,6 +50,9 @@ class ChatMessage(CommonPKModel, CommonModel):
         related_query_name="msg_receiver",
         related_name="msg_receiver",
     )
+
+    def __str__(self):
+        return f"{self.message_body[:10]} by {self.sender.username} to {self.receiver.username}"
 
 
 @receiver(pre_save, sender=ChatRoom)
