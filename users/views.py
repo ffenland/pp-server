@@ -157,11 +157,16 @@ class PublicUser(APIView):
 
 
 class TestLogin(APIView):
+    def get(self, request):
+        users = User.objects.order_by("username")[:10]
+        user_data = [{"id": user.id, "username": user.username} for user in users]
+        return Response({"ok": True, "data": user_data})
+
     def post(self, request):
         try:
-            user = User.objects.get(username="ffenland")
+            user = User.objects.get(pk=request.data.get("id"))
         except User.DoesNotExist:
             raise NotFound
-        print(user)
+
         login(request, user)
         return Response(status=HTTP_200_OK)
