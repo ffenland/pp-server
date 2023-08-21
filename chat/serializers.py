@@ -11,4 +11,8 @@ class ChatRommSerializer(ModelSerializer):
 class ChatMessageSerializer(ModelSerializer):
     class Meta:
         model = ChatMessage
-        fields = "__all__"
+        fields = (
+            "created_at",
+            "message_body",
+            "sender",
+        )
