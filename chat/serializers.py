@@ -15,4 +15,5 @@ class ChatMessageSerializer(ModelSerializer):
             "created_at",
             "message_body",
             "sender",
+            "id",
         )

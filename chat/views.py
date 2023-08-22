@@ -58,6 +58,19 @@ class ChatRoomListView(APIView):
         return Response({"ok": True, "data": response_data})
 
 
+class ChatRoomView(APIView):
+    def get_object(self, pk):
+        try:
+            return ChatRoom.objects.get(pk=pk)
+        except ChatRoom.DoesNotExist:
+            raise NotFound
+
+    def get(self, request, pk):
+        chatroom = self.get_object(pk)
+        serializer = ChatRommSerializer(chatroom)
+        return Response({"ok": True, "data": serializer.data})
+
+
 class CustomCursorPagination(CursorPagination):
     page_size = 20  # 한 페이지에 보여질 메시지 개수
     ordering = "-created_at"  # 메시지 생성일 기준으로 정렬
