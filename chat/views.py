@@ -66,9 +66,39 @@ class ChatRoomView(APIView):
             raise NotFound
 
     def get(self, request, pk):
-        chatroom = self.get_object(pk)
-        serializer = ChatRommSerializer(chatroom)
-        return Response({"ok": True, "data": serializer.data})
+        try:
+            chatroom = self.get_object(pk)
+            if not request.user.id in [
+                chatroom.first_user.id,
+                chatroom.second_user.id,
+            ]:
+                return Response(
+                    {
+                        "ok": True,
+                        "data": {
+                            "opponentUsername": opponent.username,
+                            "opponentAvatar": opponent.avatar,
+                        },
+                    }
+                )
+            opponent = (
+                chatroom.first_user
+                if request.user == chatroom.second_user
+                else chatroom.second_user
+            )
+            return Response(
+                {
+                    "ok": True,
+                    "data": {
+                        "opponentUsername": opponent.username,
+                        "opponentAvatar": opponent.avatar,
+                    },
+                }
+            )
+        except:
+            return Response(
+                {"ok": False},
+            )
 
 
 class CustomCursorPagination(CursorPagination):

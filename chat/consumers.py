@@ -6,6 +6,12 @@ from uuid import UUID
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
+    def get_current_user(self):
+        try:
+            return self.scope.get("user")
+        except Exception:
+            raise Exception
+
     @database_sync_to_async
     def save_chat_message(self, chat_room_id, message, sender_id):
         chat_room = ChatRoom.objects.get(id=chat_room_id)
@@ -54,8 +60,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def chat_message(self, event):
         message = event["message"]
         sender_id = event["sender_id"]
+        # check sender_id == current User
+        current_user = self.get_current_user()
+        is_me = current_user.id == UUID(sender_id)
 
         # Send message to WebSocket
-        await self.send(
-            text_data=json.dumps({"message": message, "sender_id": sender_id})
-        )
+        await self.send(text_data=json.dumps({"message": message, "isMe": is_me}))
