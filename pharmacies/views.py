@@ -1,5 +1,5 @@
-from datetime import datetime
-
+from datetime import datetime, timedelta
+from django.utils.timezone import make_aware
 from django.db.models import Q
 from django.utils.dateformat import DateFormat
 
@@ -21,8 +21,8 @@ from rest_framework.exceptions import (
 )
 from rest_framework.pagination import CursorPagination
 
-from .models import Pharmacy
-from .serializers import PharmacySerializer
+from .models import Pharmacy, Account
+from .serializers import PharmacyAccountSerializer
 
 
 class PharmacyAccountView(APIView):
@@ -34,9 +34,21 @@ class PharmacyAccountView(APIView):
             raise NotFound
 
     def get(self, request):
+        current_date = make_aware(datetime.now())
+        eight_days_ago = current_date - timedelta(days=8)
         pharmacy = self.get_object(request.user)
-        serializer = PharmacySerializer(pharmacy)
-        return Response(serializer.data)
+        recent_seven = Account.objects.filter(
+            pharmacy=pharmacy,
+            date__gte=eight_days_ago,
+            date__lte=current_date,
+        )
+        serializer = PharmacyAccountSerializer(
+            recent_seven,
+            many=True,
+        )
+        return Response(
+            {"ok": True, "pharmacy": pharmacy.id, "accounts": serializer.data}
+        )
 
 
 class PharmacyCalculateView(APIView):

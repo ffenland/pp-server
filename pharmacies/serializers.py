@@ -1,8 +1,16 @@
 from rest_framework.serializers import ModelSerializer, SerializerMethodField
-from .models import Pharmacy
+from .models import Pharmacy, Account
 
 
-class PharmacySerializer(ModelSerializer):
+class PharmacyAccountSerializer(ModelSerializer):
+    def get_unique_together_validators(self):
+        """Overriding method to disable unique together checks"""
+        return []
+
     class Meta:
-        model = Pharmacy
-        fields = "__all__"
+        model = Account
+        fields = (
+            "name",
+            "ammount",
+            "date",
+        )

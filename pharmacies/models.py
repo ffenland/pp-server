@@ -58,6 +58,9 @@ class Account(CommonPKModel):
     date = models.DateField()
     pharmacy = models.ForeignKey(Pharmacy, on_delete=models.CASCADE)
 
+    class Meta:
+        unique_together = ["date", "name", "pharmacy"]
+
     def __str__(self):
         # Extract weekday, month, day, and year from the date field
 
