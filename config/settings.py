@@ -48,13 +48,13 @@ THIRD_PARTY_APPS = [
 ]
 CUSTOM_APPS = [
     "users.apps.UsersConfig",
-    "pharmacies.apps.PharmaciesConfig",
     "common.apps.CommonConfig",
     "medias.apps.MediasConfig",
     "schedules.apps.SchedulesConfig",
     "chat.apps.ChatConfig",
     "records.apps.RecordsConfig",
     "posts.apps.PostsConfig",
+    "pharmacies.apps.PharmaciesConfig",
 ]
 
 INSTALLED_APPS = THIRD_PARTY_APPS + BASIC_APPS + CUSTOM_APPS

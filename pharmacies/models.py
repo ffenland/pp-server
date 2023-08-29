@@ -1,4 +1,7 @@
-import uuid
+from django.db import models
+
+# Create your models here.
+
 from django.db import models
 from django.conf import settings
 from common.models import CommonModel, CommonPKModel
@@ -41,3 +44,25 @@ class Pharmacy(CommonModel, CommonPKModel):
 
     class Meta:
         verbose_name_plural = "Pharmacies"
+
+
+class Account(CommonPKModel):
+    class AccountNames(models.TextChoices):
+        CASH = ("cash", "현금매출")
+        CARD = ("card", "카드매출")
+        PREPARE = ("prepare", "조제료")
+        INCOME = ("income", "입금액")
+
+    name = models.TextField(choices=AccountNames.choices)
+    ammount = models.PositiveIntegerField()
+    date = models.DateField()
+    pharmacy = models.ForeignKey(Pharmacy, on_delete=models.CASCADE)
+
+    def __str__(self):
+        # Extract weekday, month, day, and year from the date field
+
+        month = self.date.month
+        day = self.date.day
+        year = self.date.year
+        date_str = f"{year}/{month}/{day}"
+        return f"{date_str} : {self.name} : {self.ammount} : {self.pharmacy}"
