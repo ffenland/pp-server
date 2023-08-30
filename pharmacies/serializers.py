@@ -12,5 +12,4 @@ class PharmacyAccountSerializer(ModelSerializer):
         fields = (
             "name",
             "ammount",
-            "date",
         )
