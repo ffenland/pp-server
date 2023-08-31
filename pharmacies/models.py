@@ -64,8 +64,14 @@ class Account(CommonPKModel):
     def __str__(self):
         # Extract weekday, month, day, and year from the date field
 
-        month = self.date.month
-        day = self.date.day
-        year = self.date.year
+        year, month, day = self.get_date_info()
         date_str = f"{year}/{month}/{day}"
         return f"{date_str} : {self.name} : {self.ammount} : {self.pharmacy}"
+
+    def get_date_info(self):
+        # date 필드에서 연도, 월, 일 추출
+        year = self.date.year
+        month = self.date.month
+        day = self.date.day
+
+        return year, month, day
