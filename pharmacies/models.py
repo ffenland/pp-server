@@ -54,7 +54,7 @@ class Account(CommonPKModel):
         INCOME = ("income", "입금액")
 
     name = models.TextField(choices=AccountNames.choices)
-    ammount = models.PositiveIntegerField()
+    ammount = models.PositiveIntegerField(default=0)
     date = models.DateField()
     pharmacy = models.ForeignKey(Pharmacy, on_delete=models.CASCADE)
 

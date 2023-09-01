@@ -9,10 +9,12 @@ from rest_framework.exceptions import (
 )
 from users.models import User
 from chat.models import ChatMessage, ChatRoom
+from pharmacies.models import Pharmacy, Account
 import faker
 import random
 import string
 import traceback
+from datetime import datetime, timedelta
 from django.utils import timezone
 
 
@@ -83,6 +85,47 @@ class DummyChatMessage(APIView):
                         )
                     )
                 ChatMessage.objects.bulk_create(chat_messages)
+            return Response(status=200)
+        except Exception as e:
+            print("An error occurred:", e)
+            traceback.print_exc()  # Print traceback
+            raise ParseError("An error occurred")
+
+
+class DummyAccount(APIView):
+    def get_object(self, user):
+        try:
+            pharmacy = Pharmacy.objects.get(owner=user)
+            return pharmacy
+        except Pharmacy.DoesNotExist:
+            raise NotFound
+
+    def post(self, request):
+        try:
+            current_date = datetime.now().date()
+            one_yeaer_ago = current_date - timedelta(days=365)
+            pharmacy = self.get_object(request.user)
+
+            for choice in Account.AccountNames.choices:
+                temp_date = current_date
+                name = choice[0]
+
+                while temp_date >= one_yeaer_ago:
+                    ammount = random.randint(3000, 20000) * 100
+                    does_existing_account = Account.objects.filter(
+                        date=temp_date,
+                        name=name,
+                        pharmacy=pharmacy,
+                    ).exists()
+                    if not does_existing_account:
+                        account = Account.objects.create(
+                            name=name,
+                            date=temp_date,
+                            pharmacy=pharmacy,
+                            ammount=ammount,
+                        )
+                    temp_date -= timedelta(days=1)
+
             return Response(status=200)
         except Exception as e:
             print("An error occurred:", e)

@@ -27,14 +27,16 @@ from .serializers import PharmacyAccountSerializer
 
 
 def organize_accounts_by_date(accounts):
-    organized_data = defaultdict(list)
+    """return {"yyyy-mm-dd":{"cash":foo-bar,"income":foo-bar, "card":foo-bar, "prepare":foo-bar},}"""
+    organized_data = defaultdict(dict)
 
     for account in accounts:
         year, month, day = account.get_date_info()  # Account 모델에 있는 메서드 활용
-        date_str = f"{year}/{month:02}"  # 월을 2자리로 포맷
-        organized_data[date_str].append(account)
+        date_str = f"{year}-{month:02}-{day:02}"  # 월,일을 2자리로 포맷
 
-    return organized_data
+        organized_data[date_str][account.name] = account.ammount
+
+    return dict(sorted(organized_data.items(), reverse=False))
 
 
 class PharmacyAccountView(APIView):
@@ -90,7 +92,7 @@ class PharmacyAccountView(APIView):
             raise ParseError("An error occurred")
 
 
-class PharmacyAccountOneDayView(APIView):
+class PharmacyAccountDateView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self, user):
@@ -101,46 +103,46 @@ class PharmacyAccountOneDayView(APIView):
             raise NotFound
 
     def get(self, request, date):
-        if not date:
-            return Response({"ok": False, "error": "Not valid date"})
+        # date formant YYYY-MM-DD
+        print("DATE", date)
         pharmacy = self.get_object(request.user)
-        date_obj = datetime.strptime(date, "%Y-%m-%d").date()
-        accounts = Account.objects.filter(pharmacy=pharmacy, date=date_obj)
-        account_obj = {}
-        for account in accounts:
-            key = account.name
-            value = account.ammount
-            if key and value:
-                account_obj[key] = value
-
-        return Response({"ok": True, "data": account_obj}, status=HTTP_200_OK)
-
-
-class PharmacyAccountMonthView(APIView):
-    def get_object(self, user):
         try:
-            pharmacy = Pharmacy.objects.get(owner=user)
-            return pharmacy
-        except Pharmacy.DoesNotExist:
-            raise NotFound
-
-    def get(self, request, date):
-        # date = 6digit YYYYMM]
-        if len(date) == 6:
-            pharmacy = self.get_object(request.user)
-            year = int(date[:4])
-            month = int(date[4:])
-            # 월의 앞의 0 삭제
-            formatted_month = str(month).lstrip("0")
-            date_filter = Q(
-                date__year=year, date__month=formatted_month, pharmacy=pharmacy
-            )
-            filtered_accounts = Account.objects.filter(date_filter)
-            organized_accounts = organize_accounts_by_date(filtered_accounts)
-            for date, accounts in organized_accounts.items():
-                print(f"{date}: {len(accounts)} 거래 기록")
+            if len(date) == 10:
+                # Day
+                date_obj = datetime.strptime(date, "%Y-%m-%d").date()
+                print("DATE_OBJ", date_obj)
+                accounts = Account.objects.filter(pharmacy=pharmacy, date=date_obj)
+                print("ACCOUNTS", accounts)
+                account_obj = {}
+                account_obj[date] = defaultdict(dict)
+                # account가 아예 없는 경우가 있구나...
                 for account in accounts:
-                    print(f" - {account}")
-            return Response({"ok": True})
-        else:
-            return Response({"ok": False}, status=HTTP_400_BAD_REQUEST)
+                    key = account.name
+                    print("KEY")
+                    value = account.ammount
+                    print(key)
+                    account_obj[date][key] = value if value is not None else 0
+                return Response({"ok": True, "data": account_obj}, status=HTTP_200_OK)
+            elif len(date) == 7:
+                # Month
+                date_obj = datetime.strptime(date, "%Y-%m").date()
+                date_filter = Q(
+                    date__year=date_obj.year,
+                    date__month=date_obj.month,
+                    pharmacy=pharmacy,
+                )
+                filtered_accounts = Account.objects.filter(date_filter)
+
+                organized_accounts = organize_accounts_by_date(filtered_accounts)
+                return Response({"ok": True, "data": organized_accounts})
+            else:
+                return Response(
+                    {"ok": False, "error": "Not valid date"},
+                    status=HTTP_400_BAD_REQUEST,
+                )
+        except Exception:
+            traceback.print_exc()  # Print traceback
+            return Response(
+                {"ok": False, "error": "Not valid date or ProcessError"},
+                status=HTTP_400_BAD_REQUEST,
+            )
