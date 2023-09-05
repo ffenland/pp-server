@@ -10,6 +10,7 @@ from rest_framework.exceptions import (
 from users.models import User
 from chat.models import ChatMessage, ChatRoom
 from pharmacies.models import Pharmacy, Account
+from posts.models import Post, Reply
 import faker
 import random
 import string
@@ -21,7 +22,7 @@ from django.utils import timezone
 class DummyUser(APIView):
     def post(self, request):
         """create dummy users"""
-        fake = faker.Faker()
+        fake = faker.Faker("ko_KR")
 
         def generate_random_string(length):
             digits = string.digits  # 숫자 문자열 '0123456789'
@@ -34,7 +35,7 @@ class DummyUser(APIView):
                     first_name=fake.first_name(),
                     last_name=fake.last_name(),
                     email=fake.email(),
-                    phone=fake.phone_number(),
+                    phone=generate_random_string(11),
                     naver_id=generate_random_string(5),
                     kakao_id=generate_random_string(5),
                     avatar=fake.image_url(),
@@ -51,6 +52,7 @@ class DummyUser(APIView):
             create_dummy_users()
             return Response(status=200)
         except:
+            traceback.print_exc()  # Print traceback
             raise ParseError
 
 
@@ -131,3 +133,39 @@ class DummyAccount(APIView):
             print("An error occurred:", e)
             traceback.print_exc()  # Print traceback
             raise ParseError("An error occurred")
+
+
+class DummyPost(APIView):
+    def post(self, request):
+        """Create Dummpy Post"""
+
+        def generate_random_string(length):
+            digits = string.digits  # 숫자 문자열 '0123456789'
+            return "".join(random.choice(digits) for _ in range(length))
+
+        def create_dummy_post(num_posts=50):
+            fake = faker.Faker("ko_KR")
+            for _ in range(num_posts):
+                random_user = User.objects.order_by("?").first()
+                if random_user is not None:
+                    choices = [choice[0] for choice in Post.PostKindChoices.choices]
+                    random_choice = random.choice(choices)
+                    Post.objects.create(
+                        user=random_user,
+                        title=fake.sentence()[:29],
+                        article=fake.text(),
+                        kind=random_choice,
+                    )
+
+        try:
+            create_dummy_post()
+            return Response(status=200)
+        except:
+            traceback.print_exc()  # Print traceback
+            raise ParseError
+
+
+class DummyReply(APIView):
+    def post(self, request):
+        """Create Dummy Reply"""
+        pass

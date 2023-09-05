@@ -118,9 +118,7 @@ class PharmacyAccountDateView(APIView):
                 # account가 아예 없는 경우가 있구나...
                 for account in accounts:
                     key = account.name
-                    print("KEY")
                     value = account.ammount
-                    print(key)
                     account_obj[date][key] = value if value is not None else 0
                 return Response({"ok": True, "data": account_obj}, status=HTTP_200_OK)
             elif len(date) == 7:

@@ -1,11 +1,11 @@
 from django.db import models
 from django.conf import settings
-from common.models import CommonModel
+from common.models import CommonModel, CommonPKModel
 
 # Create your models here.
 
 
-class Post(CommonModel):
+class Post(CommonModel, CommonPKModel):
     class PostKindChoices(models.TextChoices):
         QUE = ("question", "질문")
         LIFE = ("life", "일상")
@@ -23,6 +23,10 @@ class Post(CommonModel):
         choices=PostKindChoices.choices,
     )
     article = models.TextField()
+    view_count = models.PositiveIntegerField(
+        default=0,
+        editable=False,
+    )
 
     def __str__(self):
         return self.title
