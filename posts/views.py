@@ -7,7 +7,7 @@ from django.core.cache import cache
 import traceback
 from rest_framework import generics
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import (
     HTTP_204_NO_CONTENT,
@@ -24,7 +24,12 @@ from rest_framework.exceptions import (
 from rest_framework.pagination import CursorPagination
 from collections import defaultdict
 from .models import Post, Reply
-from .serializers import PostListSerializer, PostSerializer, ReplySerializer
+from .serializers import (
+    PostListSerializer,
+    PostSerializer,
+    ReplySerializer,
+    POSTCreateSerializer,
+)
 
 
 class CustomCursorPagination(CursorPagination):
@@ -45,6 +50,11 @@ class PostListView(generics.ListAPIView):
             queryset = queryset.filter(kind=kind)
         queryset = queryset.order_by("-created_at")
         return queryset
+
+
+class PostCreateView(generics.CreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = POSTCreateSerializer
 
 
 class PostDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -83,6 +93,7 @@ class PostDetailView(generics.RetrieveUpdateDestroyAPIView):
         serializer = PostSerializer(
             post,
             data=request.data,
+            partial=True,
         )
         if serializer.is_valid():
             serializer.save()
