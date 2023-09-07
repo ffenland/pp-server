@@ -21,7 +21,7 @@ from rest_framework.exceptions import (
     ParseError,
     PermissionDenied,
 )
-from rest_framework.pagination import CursorPagination
+from rest_framework.pagination import PageNumberPagination
 from collections import defaultdict
 from .models import Post, Reply
 from .serializers import (
@@ -32,14 +32,15 @@ from .serializers import (
 )
 
 
-class CustomCursorPagination(CursorPagination):
-    page_size = 10  # 한 페이지에 보여질 Post 개수
-    ordering = "-created_at"  # Post 생성일 기준으로 정렬
+class PostListPagination(PageNumberPagination):
+    page_size = 10  # 페이지 당 아이템 수 설정
+    page_size_query_param = "pg"  # 페이지 크기를 변경할 수 있는 쿼리 매개변수 설정
+    max_page_size = 1000  # 최대 페이지 크기 설정
 
 
 class PostListView(generics.ListAPIView):
     serializer_class = PostListSerializer
-    pagination_class = CustomCursorPagination
+    pagination_class = PostListPagination
 
     def get_queryset(self):
         kind_param = self.request.query_params.get("kind", None)
