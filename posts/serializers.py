@@ -21,16 +21,10 @@ class PostHotSerializer(ModelSerializer):
         fields = ("title", "kind", "view_count")
 
 
-class POSTCreateSerializer(ModelSerializer):
+class PostCreateSerializer(ModelSerializer):
     class Meta:
         model = Post
         fields = "__all__"
-
-    def create(self, validated_data):
-        user = self.context["request"].user
-        validated_data["user"] = user
-        post = Post.objects.create(**validated_data)
-        return post
 
 
 class PostSerializer(ModelSerializer):

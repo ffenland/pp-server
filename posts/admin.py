@@ -4,5 +4,9 @@ from .models import Post, Reply
 # Register your models here.
 
 
-admin.site.register(Post)
+@admin.register(Post)
+class PostAdmin(admin.ModelAdmin):
+    pass
+
+
 admin.site.register(Reply)

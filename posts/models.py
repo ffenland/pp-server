@@ -29,7 +29,7 @@ class Post(CommonModel, CommonPKModel):
     )
 
     def __str__(self):
-        return self.title
+        return f"{self.kind}/{self.title} by {self.user}"
 
 
 class Reply(CommonModel):

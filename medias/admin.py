@@ -3,4 +3,7 @@ from .models import Photo
 
 # Register your models here.
 
-admin.site.register(Photo)
+
+@admin.register(Photo)
+class PhotoAdmin(admin.ModelAdmin):
+    pass

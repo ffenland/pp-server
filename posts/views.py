@@ -23,13 +23,15 @@ from rest_framework.exceptions import (
 )
 from rest_framework.pagination import PageNumberPagination
 from collections import defaultdict
+import traceback
 from .models import Post, Reply
 from .serializers import (
     PostListSerializer,
     PostSerializer,
     ReplySerializer,
-    POSTCreateSerializer,
+    PostCreateSerializer,
 )
+from medias.models import Photo
 
 
 class PostListPagination(PageNumberPagination):
@@ -55,7 +57,45 @@ class PostListView(generics.ListAPIView):
 
 class PostCreateView(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = POSTCreateSerializer
+    serializer_class = PostCreateSerializer
+
+    def create_post_photo(self, user, cf_id, description, post):
+        Photo.objects.create(
+            cf_id=cf_id,
+            uploader=user,
+            description=description,
+            post=post,
+        )
+
+    def create(self, request):
+        create_data = {
+            "kind": request.data.get("kind"),
+            "title": request.data.get("title"),
+            "article": request.data.get("article"),
+            "user": request.user.id,
+        }
+        serializer = self.get_serializer(data=create_data)
+        if serializer.is_valid():
+            post = serializer.save()
+            # 이미지 업로드 처리
+            image_list = request.data.get("image")
+            if image_list:
+                for image in image_list:
+                    self.create_post_photo(
+                        user=request.user,
+                        cf_id=image,
+                        description="",
+                        post=post,
+                    )
+
+            return Response(
+                {"ok": True, "data": serializer.data},
+                status=HTTP_201_CREATED,
+            )
+        else:
+            traceback.print_exc()  # Print traceback
+            print(serializer.errors)
+            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
 
 class PostDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -118,7 +158,3 @@ class ReplyView(APIView):
             many=True,
         )
         return Response({"ok": True, "data": serializer.data})
-
-    def post(self, request, pk):
-        # pk=post_pk
-        pass

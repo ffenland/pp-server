@@ -18,6 +18,12 @@ class Photo(CommonModel, CommonPKModel):
         null=True,
         blank=True,
     )
+    post = models.ForeignKey(
+        "posts.Post",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
 
     def __str__(self):
-        return "Photo File"
+        return f"id:{self.cf_id}/{self.post.title if self.post else ''}{self.pharmacy if self.pharmacy else ''} by {self.uploader}"
