@@ -1,5 +1,6 @@
 from rest_framework.serializers import ModelSerializer, SerializerMethodField
 from users.serializers import TinyUserSerializer
+from medias.serializers import PhotoSerializer
 from .models import Post, Reply
 
 
@@ -29,6 +30,10 @@ class PostCreateSerializer(ModelSerializer):
 
 class PostSerializer(ModelSerializer):
     user = TinyUserSerializer(read_only=True)
+    photo_set = PhotoSerializer(
+        read_only=True,
+        many=True,
+    )
 
     class Meta:
         model = Post
