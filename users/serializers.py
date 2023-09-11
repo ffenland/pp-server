@@ -1,5 +1,6 @@
 from rest_framework.serializers import ModelSerializer
 from .models import User
+from pharmacies.serializers import PharmacySerializer
 
 
 class TinyUserSerializer(ModelSerializer):
@@ -26,6 +27,8 @@ class MeUserSerializer(ModelSerializer):
 
 
 class PrivateUserSerializer(ModelSerializer):
+    pharmacy = PharmacySerializer()
+
     class Meta:
         model = User
         exclude = (

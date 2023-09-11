@@ -15,8 +15,11 @@ import faker
 import random
 import string
 import traceback
+import requests
 from datetime import datetime, timedelta
 from django.utils import timezone
+from bs4 import BeautifulSoup
+from common.utils import getSidoList, getSggList
 
 
 class DummyUser(APIView):
@@ -169,3 +172,14 @@ class DummyReply(APIView):
     def post(self, request):
         """Create Dummy Reply"""
         pass
+
+
+class DummyBSparse(APIView):
+    def post(self, request):
+        sido_list = getSidoList()
+        if sido_list:
+            print("Sido List:", sido_list)
+        sido_code = "51"
+        sgg_list = getSggList(sido_code)
+        print(sgg_list)
+        return Response({"ok": True}, status=200)

@@ -1,5 +1,14 @@
 from django.urls import path
-from .views import NaverLogin, KakaoLogin, Me, LogOut, PublicUser, TestLogin
+from .views import (
+    NaverLogin,
+    KakaoLogin,
+    Me,
+    LogOut,
+    PublicUser,
+    TestLogin,
+    Profile,
+    UserAddress,
+)
 
 urlpatterns = [
     path("me/", Me.as_view()),
@@ -7,5 +16,7 @@ urlpatterns = [
     path("kakao/", KakaoLogin.as_view()),
     path("log-out/", LogOut.as_view()),
     path("test-login/", TestLogin.as_view()),
+    path("profile/", Profile.as_view()),
+    path("profile/address/", UserAddress.as_view()),
     path("@<str:username>/", PublicUser.as_view()),
 ]

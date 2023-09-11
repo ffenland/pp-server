@@ -6,9 +6,9 @@ from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.exceptions import ParseError, NotFound
-from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK
+from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK, HTTP_202_ACCEPTED
 
-from .serializers import MeUserSerializer, PublicUserSerializer
+from .serializers import MeUserSerializer, PublicUserSerializer, PrivateUserSerializer
 from .models import User
 import requests
 
@@ -170,3 +170,40 @@ class TestLogin(APIView):
 
         login(request, user)
         return Response(status=HTTP_200_OK)
+
+
+class Profile(APIView):
+    """Profile page"""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        serializer = PrivateUserSerializer(user)
+        return Response(serializer.data)
+
+    def put(self, request):
+        # just get username, phone, avatar,
+        # address
+        user = request.user
+        data = request.data
+        serializer = PrivateUserSerializer(
+            instance=user,
+            data=data,
+            partial=True,
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"ok": True, "data": serializer.data}, status=HTTP_202_ACCEPTED
+            )
+        else:
+            return Response(
+                {"ok": False, "error": serializer.errors}, status=HTTP_400_BAD_REQUEST
+            )
+
+
+class UserAddress(APIView):
+    def get(self, request):
+        """get Current Address Value"""
+        user = request.user

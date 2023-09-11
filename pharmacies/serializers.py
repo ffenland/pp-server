@@ -13,3 +13,9 @@ class PharmacyAccountSerializer(ModelSerializer):
             "name",
             "ammount",
         )
+
+
+class PharmacySerializer(ModelSerializer):
+    class Meta:
+        model = Pharmacy
+        fields = "__all__"
