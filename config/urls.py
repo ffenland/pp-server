@@ -26,4 +26,5 @@ urlpatterns = [
     path("api/v1/pharmacy/", include("pharmacies.urls")),
     path("api/v1/posts/", include("posts.urls")),
     path("api/v1/medias/", include("medias.urls")),
+    path("api/v1/common/", include("common.urls")),
 ]

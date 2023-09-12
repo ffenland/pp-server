@@ -23,10 +23,9 @@ def getSidoList():
             sidoList.sort(key=lambda x: x["code"])
             return sidoList
         else:
-            return False
+            return None
     except Exception as e:
-        print("Error:", e)
-        return False
+        return None
 
 
 def getSggList(sido_code):

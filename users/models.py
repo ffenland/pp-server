@@ -73,11 +73,11 @@ class User(AbstractUser):
 
     # for recruit
     address_sido_code = models.CharField(
-        max_length=5,
+        max_length=2,
         null=True,
     )
     address_sgg_code = models.CharField(
-        max_length=5,
+        max_length=3,
         null=True,
     )
     address_sido = models.CharField(

@@ -6,7 +6,12 @@ from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.exceptions import ParseError, NotFound
-from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK, HTTP_202_ACCEPTED
+from rest_framework.status import (
+    HTTP_400_BAD_REQUEST,
+    HTTP_200_OK,
+    HTTP_202_ACCEPTED,
+    HTTP_201_CREATED,
+)
 
 from .serializers import MeUserSerializer, PublicUserSerializer, PrivateUserSerializer
 from .models import User
@@ -207,3 +212,18 @@ class UserAddress(APIView):
     def get(self, request):
         """get Current Address Value"""
         user = request.user
+
+    def put(self, request):
+        sido = request.data.get("sido")
+        sgg = request.data.get("sgg")
+        if sido != None and sgg != None:
+            # Edit User Info
+            user = request.user
+            user.address_sido_code = sido.get("code")
+            user.address_sido = sido.get("name")
+            user.address_sgg_code = sgg.get("code")
+            user.address_sgg = sgg.get("name")
+            user.save()
+            return Response({"ok": True}, status=HTTP_202_ACCEPTED)
+        else:
+            return Response({"ok": False}, status=HTTP_400_BAD_REQUEST)

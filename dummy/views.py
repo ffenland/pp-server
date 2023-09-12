@@ -183,3 +183,8 @@ class DummyBSparse(APIView):
         sgg_list = getSggList(sido_code)
         print(sgg_list)
         return Response({"ok": True}, status=200)
+
+
+class OneTime(APIView):
+    def post(self, request):
+        return Response(status=200)

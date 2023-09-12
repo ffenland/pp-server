@@ -8,4 +8,5 @@ urlpatterns = [
     path("post", views.DummyPost.as_view()),
     path("reply", views.DummyReply.as_view()),
     path("bs4", views.DummyBSparse.as_view()),
+    path("one/", views.OneTime.as_view()),
 ]
