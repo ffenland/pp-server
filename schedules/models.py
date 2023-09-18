@@ -8,12 +8,12 @@ from common.models import CommonPKModel
 
 class Day(models.Model):
     date_validator = RegexValidator(
-        regex=r"^(?:\d{8}|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)$",
+        regex=r"^(?:\d{10}|mon|tue|wed|thu|fri|sat|sun)$",
         message="Date should be a valid 8-digit number or a day of the week.",
     )
 
     date = models.CharField(
-        max_length=9,
+        max_length=10,
         validators=[date_validator],
     )
     am = models.BooleanField(
@@ -35,7 +35,7 @@ class Day(models.Model):
             return f"{self.date} pm"
 
     def is_regular(self):
-        return self.date.endswith("day")
+        return len(self.date) == 3
 
 
 class Schedule(CommonPKModel):

@@ -28,30 +28,28 @@ def str_to_bool(value):
     return value.lower() == "true"
 
 
-def get_day_ids(data):
-    """Day id의 배열을 반환하거나 빈 배열을 반환함."""
-    if isinstance(data, list) or isinstance(data, tuple):
-        day_ids = []
-        for item in data:
-            serializer = DaySerializer(data=item)
-            if serializer.is_valid():
-                date = serializer.validated_data.get("date")
-                am = serializer.validated_data.get("am")
-                pm = serializer.validated_data.get("pm")
-                day, created = Day.objects.get_or_create(date=date, am=am, pm=pm)
-                day_ids.append(day.id)
-            else:
-                return Response(serializer.errors)
-        return day_ids
-    else:
-        return []
+def find_or_create_schedule(working_days):
+    """1차로 Days를 찾고 2차로 Days를 가진 Schedule을 찾는다."""
+    day_ids = []  # 일자별 Day 모델의 ID를 저장할 리스트
 
+    # workingDays를 순회하면서 해당하는 Day 모델을 찾거나 생성
+    for day, values in working_days.items():
+        try:
+            # 해당하는 Day 모델을 찾음
+            day_obj = Day.objects.get(date=day, am=values["am"], pm=values["pm"])
+            day_ids.append(day_obj.id)  # Day 모델의 ID를 저장
+        except Day.DoesNotExist:
+            # 해당하는 Day 모델이 없으면 생성
+            day_obj = Day(date=day, am=values["am"], pm=values["pm"])
+            day_obj.save()
+            day_ids.append(day_obj.id)  # 새로 생성한 Day 모델의 ID를 저장
 
-def get_schedule(data):
-    day_id_list = get_day_ids(data)
-    if len(day_id_list) != 0:
-        day_count = len(day_id_list)
-        day_list = Day.objects.filter(id__in=day_id_list)
+    # Day_ids를 이용해 스케줄을 찾거나 만든다.
+
+    if len(day_ids) != 0:
+        day_count = len(day_ids)
+        day_list = Day.objects.filter(id__in=day_ids)
+
         schedule = Schedule.objects.annotate(day_count=Count("days")).filter(
             day_count=day_count
         )
@@ -61,11 +59,9 @@ def get_schedule(data):
         if schedule == None:
             schedule = Schedule.objects.create()
             schedule.days.add(*day_list)
-        # Need only SC id.
-
-        return schedule
-    else:
-        return None
+            return schedule
+        else:
+            return schedule
 
 
 class TestView(APIView):
@@ -103,11 +99,13 @@ class ResumeView(APIView):
 
     def post(self, request):
         """Create or Update Resume"""
-        is_recruit = request.data.get("isRecruit")
-        description = request.data.get("description")
-        days = request.data.get("days")
-        schedule = get_schedule(days)
-        if description and len(description) > 10 and schedule:
+
+        is_recruit = request.data.get("data").get("isRecruit")
+        is_regular = request.data.get("data").get("isRegular")
+        description = request.data.get("data").get("description")
+        working_days = request.data.get("data").get("workingDays")
+        schedule = find_or_create_schedule(working_days=working_days)
+        if schedule and description and len(description) > 10:
             schedule_id = schedule.id
             user = request.user
             obj, created = Resume.objects.update_or_create(
@@ -119,7 +117,7 @@ class ResumeView(APIView):
 
             serializer = ResumeSerializer(obj)
             return Response(
-                {"ok": True, "resume": serializer.data}, status=HTTP_201_CREATED
+                {"ok": True, "id": serializer.data.get("id")}, status=HTTP_201_CREATED
             )
         else:
             raise ParseError
