@@ -1,6 +1,8 @@
 from django.db.models import Count
+from datetime import datetime, timedelta
+from django.utils import timezone
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import (
     HTTP_204_NO_CONTENT,
@@ -85,17 +87,29 @@ class TestView(APIView):
 
 
 class ResumeView(APIView):
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        recruit_param = request.query_params.get("isRecruit")
-        is_recruit = recruit_param and recruit_param.lower() == "true"
-        if is_recruit:
-            resumes = Resume.objects.filter(is_recruit=True)
-        else:
-            resumes = Resume.objects.filter(is_recruit=False)
-        serializer = ResumeSerializer(resumes, many=True)
-        return Response({"ok": True, "resumes": serializer.data})
+        sido_code = request.query_params.get("sido")
+        sgg_code = request.query_params.get("sgg")
+
+        one_week_ago = timezone.now() - timedelta(days=7)
+
+        recruits = Resume.objects.filter(
+            is_recruit=True, address_sido_code=sido_code, created_at__gte=one_week_ago
+        ).order_by("-created_at")[:5]
+        resumes = Resume.objects.filter(
+            is_recruit=False, address_sgg_code=sgg_code, created_at__gte=one_week_ago
+        ).order_by("-created_at")[:5]
+        resume_serializer = ResumeSerializer(resumes, many=True)
+        recruit_serializer = ResumeSerializer(recruits, many=True)
+        return Response(
+            {
+                "ok": True,
+                "resumes": resume_serializer.data,
+                "recruits": recruit_serializer.data,
+            }
+        )
 
     def post(self, request):
         """Create or Update Resume"""

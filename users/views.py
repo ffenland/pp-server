@@ -212,6 +212,37 @@ class UserAddress(APIView):
     def get(self, request):
         """get Current Address Value"""
         user = request.user
+        sido_code = user.address_sido_code
+        sido = user.address_sido
+        sgg_code = user.address_sgg_code
+        sgg = user.address_sgg
+        # 넷중 하나라도 None 이면 false
+        if sido and sido_code and sgg and sgg_code:
+            return Response(
+                {
+                    "setted": True,
+                    "data": {
+                        "sidoCode": sido_code,
+                        "sido": sido,
+                        "sggCode": sgg_code,
+                        "sgg": sgg,
+                    },
+                },
+                status=HTTP_200_OK,
+            )
+        else:
+            return Response(
+                {
+                    "setted": False,
+                    "data": {
+                        "sidoCode": "11",
+                        "sido": "서울특별시",
+                        "sggCode": "650",
+                        "sgg": "서초구",
+                    },
+                },
+                status=HTTP_200_OK,
+            )
 
     def put(self, request):
         sido = request.data.get("sido")

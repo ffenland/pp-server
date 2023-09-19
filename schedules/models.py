@@ -44,7 +44,7 @@ class Schedule(CommonPKModel):
     )
 
 
-class Resume(CommonPKModel):
+class Resume(CommonPKModel, CommonModel):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -56,3 +56,17 @@ class Resume(CommonPKModel):
     )
     description = models.TextField()
     is_recruit = models.BooleanField(default=False)
+    address_sido_code = models.CharField(
+        max_length=2,
+    )
+    address_sgg_code = models.CharField(
+        max_length=3,
+    )
+    address2_sido_code = models.CharField(
+        max_length=2,
+        null=True,
+    )
+    address2_sgg_code = models.CharField(
+        max_length=3,
+        null=True,
+    )
