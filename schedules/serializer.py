@@ -42,6 +42,21 @@ class ResumeSerializer(ModelSerializer):
         exclude = ("description",)
 
 
+class HomeScheduleSerializer(ModelSerializer):
+    schedule = ScheduleWithDaysSerializer()
+
+    class Meta:
+        model = Resume
+        fields = (
+            "is_recruit",
+            "is_regular",
+            "schedule",
+            "address_sido_code",
+            "address_sgg_code",
+            "created_at",
+        )
+
+
 class ResumeDetailSerializer(ModelSerializer):
     schedule = ScheduleWithDaysSerializer()
 

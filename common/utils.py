@@ -57,3 +57,19 @@ def getSggList(sido_code):
     except Exception as e:
         print("Error:", e)
         return False
+
+
+def convert_code_to_str(code):
+    try:
+        padded_code = code.ljust(10, "0")
+        url = "https://www.code.go.kr/stdcode/regCodeL.do"
+        payload = {"regionCd": padded_code}
+        response = requests.post(url, data=payload)
+        response.raise_for_status()
+
+        soup = BeautifulSoup(response.text, "html.parser")
+        address = soup.find("td", attrs={"class": "table_center01"}).string
+        return address
+    except Exception as e:
+        print(e)
+        return None

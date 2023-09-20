@@ -3,6 +3,7 @@ import traceback
 from django.db.models import Count
 from datetime import datetime, timedelta
 from django.utils import timezone
+from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework.response import Response
@@ -22,6 +23,7 @@ from .models import Schedule, Day, Resume
 from .serializer import (
     DaySerializer,
     ScheduleSerializer,
+    HomeScheduleSerializer,
     ResumeSerializer,
     ResumeDetailSerializer,
 )
@@ -68,21 +70,22 @@ def find_or_create_schedule(working_days):
             return schedule
 
 
-class TestView(APIView):
-    def post(self, request):
-        {
-            "description": "blabla",
-            "days": [
-                {"date": "20230809", "am": "False", "pm": "True"},
-                {"date": "20230812", "am": "True", "pm": "True"},
-                {"date": "20230811", "am": "True", "pm": "True"},
-                {"date": "20230813", "am": "True", "pm": "False"},
-            ],
-            "is_recruit": "False",
-        }
+class HomeSchedules(generics.ListAPIView):
+    serializer_class = HomeScheduleSerializer
 
-        get_day_ids(request.data)
-        return Response(status=HTTP_200_OK)
+    def get_queryset(self):
+        address_sido_code = self.request.user.address_sido_code
+        profile_setted = True
+        if not address_sido_code:
+            address_sido_code = "11"
+            profile_setted = False
+        queryset = Resume.objects.filter(
+            address_sido_code=address_sido_code,
+        ).order_by(
+            "-created_at"
+        )[:5]
+
+        return queryset
 
 
 # Create your views here.

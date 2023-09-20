@@ -70,3 +70,9 @@ class Resume(CommonPKModel, CommonModel):
         max_length=3,
         null=True,
     )
+
+    @property
+    def is_regular(self):
+        # Schedule에 연결된 Day 중 첫 번째 Day의 date 필드의 길이가 3이면 True, 그렇지 않으면 False 반환
+        first_day = self.schedule.days.first()
+        return len(first_day.date) == 3
