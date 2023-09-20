@@ -1,3 +1,5 @@
+import traceback
+
 from django.db.models import Count
 from datetime import datetime, timedelta
 from django.utils import timezone
@@ -118,6 +120,7 @@ class ResumeView(APIView):
         is_regular = request.data.get("data").get("isRegular")
         description = request.data.get("data").get("description")
         working_days = request.data.get("data").get("workingDays")
+        address = request.data.get("data").get("address")
         schedule = find_or_create_schedule(working_days=working_days)
         if schedule and description and len(description) > 10:
             schedule_id = schedule.id
@@ -127,6 +130,8 @@ class ResumeView(APIView):
                 schedule_id=schedule_id,
                 defaults={"description": description},
                 is_recruit=is_recruit,
+                address_sido_code=address.get("sidoCode"),
+                address_sgg_code=address.get("sggCode"),
             )
 
             serializer = ResumeSerializer(obj)
@@ -134,6 +139,7 @@ class ResumeView(APIView):
                 {"ok": True, "id": serializer.data.get("id")}, status=HTTP_201_CREATED
             )
         else:
+            traceback.print_exc()  # Print traceback
             raise ParseError
 
 
