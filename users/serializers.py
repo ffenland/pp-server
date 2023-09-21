@@ -52,7 +52,8 @@ class PublicUserSerializer(ModelSerializer):
         model = User
         fields = (
             "username",
-            "email",
+            "id",
             "avatar",
-            "is_host",
+            "is_owner",
+            "email",
         )

@@ -1,5 +1,10 @@
-from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import (
+    ModelSerializer,
+    ReadOnlyField,
+    SerializerMethodField,
+)
 from .models import Day, Schedule, Resume
+from common.utils import convert_code_to_str
 
 
 class DaySerializer(ModelSerializer):
@@ -59,7 +64,13 @@ class HomeScheduleSerializer(ModelSerializer):
 
 class ResumeDetailSerializer(ModelSerializer):
     schedule = ScheduleWithDaysSerializer()
+    is_regular = ReadOnlyField()
+    str_address = SerializerMethodField()
 
     class Meta:
         model = Resume
         fields = "__all__"
+
+    def get_str_address(self, resume):
+        code = resume.address_sido_code + resume.address_sgg_code
+        return convert_code_to_str(code)

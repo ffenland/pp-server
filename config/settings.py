@@ -165,7 +165,7 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.SessionAuthentication",
     ]
 }
-
+SESSION_SAVE_EVERY_REQUEST = True
 # CORS
 CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",

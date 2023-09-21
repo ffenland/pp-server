@@ -18,5 +18,5 @@ urlpatterns = [
     path("test-login/", TestLogin.as_view()),
     path("profile/", Profile.as_view()),
     path("profile/address/", UserAddress.as_view()),
-    path("@<str:username>/", PublicUser.as_view()),
+    path("@<str:id>/", PublicUser.as_view()),
 ]

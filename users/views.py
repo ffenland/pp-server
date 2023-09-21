@@ -152,9 +152,9 @@ class PublicUser(APIView):
         IsAuthenticatedOrReadOnly,
     ]
 
-    def get(self, request, username):
+    def get(self, request, id):
         try:
-            user = User.objects.get(username=username)
+            user = User.objects.get(id=id)
         except User.DoesNotExist:
             raise NotFound
         serializer = PublicUserSerializer(user)
