@@ -8,6 +8,7 @@ from .views import (
     TestLogin,
     Profile,
     UserAddress,
+    UserResume,
 )
 
 urlpatterns = [
@@ -18,5 +19,6 @@ urlpatterns = [
     path("test-login/", TestLogin.as_view()),
     path("profile/", Profile.as_view()),
     path("profile/address/", UserAddress.as_view()),
+    path("resume/", UserResume.as_view()),
     path("@<str:id>/", PublicUser.as_view()),
 ]

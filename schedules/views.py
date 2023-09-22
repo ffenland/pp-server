@@ -22,7 +22,7 @@ from rest_framework.exceptions import (
 from .models import Schedule, Day, Resume
 from .serializer import (
     DaySerializer,
-    ScheduleSerializer,
+    ScheduleWithDaysSerializer,
     HomeScheduleSerializer,
     ResumeSerializer,
     ResumeDetailSerializer,
@@ -119,8 +119,7 @@ class ResumeView(APIView):
     def post(self, request):
         """Create or Update Resume"""
 
-        is_recruit = request.data.get("data").get("isRecruit")
-        is_regular = request.data.get("data").get("isRegular")
+        is_recruit = request.user.is_owner
         description = request.data.get("data").get("description")
         working_days = request.data.get("data").get("workingDays")
         address = request.data.get("data").get("address")
@@ -144,6 +143,49 @@ class ResumeView(APIView):
         else:
             traceback.print_exc()  # Print traceback
             raise ParseError
+
+
+class ResumeEdit(APIView):
+    def put(self, request):
+        try:
+            is_recruit = request.user.is_owner
+            description = request.data.get("data").get("description")
+            working_days = request.data.get("data").get("workingDays")
+            address = request.data.get("data").get("address")
+            resume_id = request.data.get("data").get("resumeId")
+            schedule = find_or_create_schedule(working_days=working_days)
+
+            if schedule and description and len(description) > 10:
+                user = request.user
+                resume = Resume.objects.get(id=resume_id)
+                resume.schedule = schedule
+                data = {
+                    "description": description,
+                    "is_recruit": is_recruit,
+                    "user": user.id,
+                    "address_sido_code": address.get("sidoCode"),
+                    "address_sgg_code": address.get("sggCode"),
+                }
+                serializer = ResumeDetailSerializer(
+                    resume,
+                    data=data,
+                    partial=True,
+                )
+                if serializer.is_valid():
+                    serializer.save()  # Save the serializer data
+
+                    return Response(
+                        {"ok": True, "id": serializer.data.get("id")},
+                        status=HTTP_201_CREATED,
+                    )
+                else:
+                    print(serializer.errors)
+                    return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+            else:
+                raise ParseError("Invalid data")
+        except Exception as e:
+            traceback.print_exc()  # Print traceback for debugging
+            raise ParseError(str(e))
 
 
 class ResumeDetailView(APIView):
@@ -251,3 +293,17 @@ class ResumeRecord(APIView):
                 resume=resume,
             )
             return Response({"ok": True})
+
+
+class CountResume(APIView):
+    def get(self, request):
+        # return current User's resume count
+        # til now limit is one
+        try:
+            user = request.user
+            resume_count = Resume.objects.filter(user=user).count()
+            return Response({"ok": True, "count": resume_count})
+
+        except Exception as e:
+            print(e)
+            raise ParseError

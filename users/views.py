@@ -15,6 +15,7 @@ from rest_framework.status import (
 
 from .serializers import MeUserSerializer, PublicUserSerializer, PrivateUserSerializer
 from .models import User
+from schedules.models import Resume
 import requests
 
 
@@ -258,3 +259,14 @@ class UserAddress(APIView):
             return Response({"ok": True}, status=HTTP_202_ACCEPTED)
         else:
             return Response({"ok": False}, status=HTTP_400_BAD_REQUEST)
+
+
+class UserResume(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        resume = Resume.objects.filter(user=request.user).first()
+        if resume == None:
+            return Response({"ok": False})
+        else:
+            return Response({"ok": True, "resume": resume.id})
