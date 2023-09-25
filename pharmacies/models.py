@@ -23,20 +23,17 @@ class Pharmacy(CommonModel, CommonPKModel):
         blank=True,
         max_length=10,
     )
-    address_road = models.CharField(
+    address_str = models.CharField(
         max_length=30,
     )
     address_detail = models.CharField(
         max_length=30,
     )
+    address_sido_code = models.CharField(
+        max_length=2,
+    )
     address_sgg_code = models.CharField(
-        max_length=5,
-    )
-    address_sido = models.CharField(
-        max_length=10,
-    )
-    address_sgg = models.CharField(
-        max_length=10,
+        max_length=3,
     )
 
     def __str__(self):
