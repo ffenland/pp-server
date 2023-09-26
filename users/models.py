@@ -70,6 +70,9 @@ class User(AbstractUser):
     )
 
     # for Owner
+    is_owner_complete = models.BooleanField(
+        default=False,
+    )
 
     # for recruit
     address_sido_code = models.CharField(
