@@ -9,6 +9,7 @@ from .views import (
     Profile,
     UserAddress,
     UserResume,
+    Signup,
 )
 
 urlpatterns = [
@@ -16,6 +17,7 @@ urlpatterns = [
     path("naver/", NaverLogin.as_view()),
     path("kakao/", KakaoLogin.as_view()),
     path("log-out/", LogOut.as_view()),
+    path("signup/", Signup.as_view()),
     path("test-login/", TestLogin.as_view()),
     path("profile/", Profile.as_view()),
     path("profile/address/", UserAddress.as_view()),

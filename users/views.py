@@ -36,6 +36,30 @@ class Me(APIView):
         return Response(serializer.data)
 
 
+class Signup(APIView):
+    def post(self, request):
+        print(request.data)
+        data = {
+            "user": {
+                "username": "ㅁㅇㄴ",
+                "licenseNum": "11111",
+                "sidoCode": "11",
+                "sggCode": "650",
+                "addressStr": "서울특별시 서초구",
+            },
+            "pharmacy": {
+                "title": "ABC약국",
+                "regNum": "3333333333",
+                "addressDetail": "1",
+                "sidoCode": "11",
+                "sggCode": "650",
+                "strAddress": "서울 서초구 강남대로 27",
+                "ok": True,
+            },
+        }
+        return Response({"ok": True}, status=HTTP_200_OK)
+
+
 class NaverLogin(APIView):
     def post(self, request):
         try:
@@ -214,19 +238,18 @@ class UserAddress(APIView):
         """get Current Address Value"""
         user = request.user
         sido_code = user.address_sido_code
-        sido = user.address_sido
         sgg_code = user.address_sgg_code
-        sgg = user.address_sgg
+        address_str = user.address_str
+
         # 넷중 하나라도 None 이면 false
-        if sido and sido_code and sgg and sgg_code:
+        if sido_code and sgg_code:
             return Response(
                 {
                     "setted": True,
                     "data": {
                         "sidoCode": sido_code,
-                        "sido": sido,
                         "sggCode": sgg_code,
-                        "sgg": sgg,
+                        "address_str": address_str,
                     },
                 },
                 status=HTTP_200_OK,
@@ -237,9 +260,8 @@ class UserAddress(APIView):
                     "setted": False,
                     "data": {
                         "sidoCode": "11",
-                        "sido": "서울특별시",
                         "sggCode": "650",
-                        "sgg": "서초구",
+                        "address_str": "서울특별시 서초구",
                     },
                 },
                 status=HTTP_200_OK,

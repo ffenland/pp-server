@@ -18,9 +18,11 @@ class MeUserSerializer(ModelSerializer):
     class Meta:
         model = User
         fields = (
+            "is_approved",
             "is_complete",
             "is_owner",
             "id",
+            "email",
             "username",
             "avatar",
         )

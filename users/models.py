@@ -24,6 +24,9 @@ class User(AbstractUser):
         default=uuid.uuid4,
         editable=False,
     )
+    is_approved = models.BooleanField(
+        default=False,
+    )
     is_complete = models.BooleanField(
         default=False,
     )
@@ -83,11 +86,7 @@ class User(AbstractUser):
         max_length=3,
         null=True,
     )
-    address_sido = models.CharField(
-        max_length=10,
-        null=True,
-    )
-    address_sgg = models.CharField(
-        max_length=10,
+    address_str = models.CharField(
+        max_length=20,
         null=True,
     )
