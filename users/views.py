@@ -16,6 +16,8 @@ from rest_framework.status import (
 from .serializers import MeUserSerializer, PublicUserSerializer, PrivateUserSerializer
 from .models import User
 from schedules.models import Resume
+from medias.models import Photo
+from pharmacies.models import Pharmacy
 import requests
 
 
@@ -25,6 +27,23 @@ def make_ran_username():
         ran_name = f"{get_random_string(length=6)}_N"
         if not User.objects.filter(username=ran_name).exists():
             return ran_name
+
+
+def set_license_image(cf_id, uploader):
+    Photo.objects.create(
+        cf_id=cf_id,
+        uploader=uploader,
+        description="License Image",
+    )
+
+
+def set_reg_image(cf_id, uploader, pharmacy):
+    Photo.objects.create(
+        cf_id=cf_id,
+        uploader=uploader,
+        description="Registration Image",
+        pharmacy=pharmacy.id,
+    )
 
 
 class Me(APIView):
@@ -39,7 +58,7 @@ class Me(APIView):
 class Signup(APIView):
     def post(self, request):
         print(request.data)
-        data = {
+        request.data = {
             "user": {
                 "username": "ㅁㅇㄴ",
                 "licenseNum": "11111",
@@ -57,7 +76,55 @@ class Signup(APIView):
                 "ok": True,
             },
         }
-        return Response({"ok": True}, status=HTTP_200_OK)
+        # first save user profile
+        user = request.user
+        # front에서 받아온 정보 가공하기
+        raw_user_data = request.data.get("user")
+        user_data = {
+            "username": raw_user_data["username"],
+            "license_number": raw_user_data["licenseNum"],
+            "phone": raw_user_data["phone"] if "phone" in raw_user_data else None,
+            "address_sido_code": raw_user_data["sidoCode"],
+            "address_sgg_code": raw_user_data["sggCode"],
+            "address_str": raw_user_data["addressStr"],
+        }
+        if raw_user_data["licenseImgId"]:
+            # make relation of Photo model to User model
+            set_license_image(raw_user_data["licenseImgId"], request.user)
+
+        raw_pharm_data = request.data.get("pharmacy")
+        if raw_pharm_data:
+            user_data["is_owner"] = True
+        serializer = PrivateUserSerializer(
+            user,
+            data=user_data,
+            partial=True,
+        )
+        if serializer.is_valid():
+            serializer.save()
+            if raw_pharm_data:
+                pharm_data = {
+                    "title": raw_pharm_data["title"],
+                    "owner": request.user,
+                    "reg_number": raw_pharm_data["regNum"],
+                    "address_sido_code": raw_pharm_data["sidoCode"],
+                    "address_sgg_code": raw_pharm_data["sggCode"],
+                    "address_str": raw_pharm_data["strAddress"],
+                    "address_detail": raw_pharm_data["addressDetail"],
+                }
+                pharmacy = Pharmacy.objects.create(data=pharm_data)
+                if raw_pharm_data["regImgId"]:
+                    set_reg_image(
+                        cf_id=raw_pharm_data["regImgId"],
+                        uploader=request.user,
+                        phamacy=pharmacy,
+                    )
+
+            else:
+                return Response({"ok": True}, status=HTTP_200_OK)
+
+        else:
+            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
 
 class NaverLogin(APIView):
