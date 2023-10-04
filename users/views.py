@@ -1,6 +1,7 @@
 from django.contrib.auth import authenticate, login, logout
 from django.conf import settings
 from django.utils.crypto import get_random_string
+from django.db import transaction
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
@@ -21,12 +22,9 @@ from .serializers import (
 )
 from .models import User
 from schedules.models import Resume
-<<<<<<< HEAD
 from pharmacies.serializers import PharmacySerializer
-=======
 from medias.models import Photo
 from pharmacies.models import Pharmacy
->>>>>>> bb142ddcef2877ac6e8beab8934f3b5fd8d6297d
 import requests
 
 
@@ -38,27 +36,6 @@ def make_ran_username():
             return ran_name
 
 
-<<<<<<< HEAD
-def set_user_profile(user, profile):
-    data = {
-        "username": profile.get("username"),
-        "license_number": profile.get("licenseNum"),
-        "license_img": profile.get("licenseImg"),
-        "address_sido_code": profile.get("sidoCode"),
-        "address_sgg_code": profile.get("sggCode"),
-        "address_str": profile.get("addressStr"),
-    }
-    serializer = SignupUserSerializer(
-        user,
-        data=data,
-    )
-    try:
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return {"ok": True, "data": serializer.data}
-    except ValidationError as e:
-        return {"ok": False, "data": e.detail}
-=======
 def set_license_image(cf_id, uploader):
     Photo.objects.create(
         cf_id=cf_id,
@@ -74,7 +51,56 @@ def set_reg_image(cf_id, uploader, pharmacy):
         description="Registration Image",
         pharmacy=pharmacy.id,
     )
->>>>>>> bb142ddcef2877ac6e8beab8934f3b5fd8d6297d
+
+
+def set_pharmacy_profile(user, pharmacy):
+    user.is_owner = True
+    user.save()
+    data = {
+        "title": pharmacy.get("title"),
+        "owner": user.id,
+        "reg_number": pharmacy.get("regNum"),
+        "address_str": pharmacy.get("strAddress"),
+        "address_detail": pharmacy.get("addressDetail"),
+        "address_sido_code": pharmacy.get("sidoCode"),
+        "address_sgg_code": pharmacy.get("sggCode"),
+    }
+    serializer = PharmacySerializer(data=data)
+    try:
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        if pharmacy.get("regImageId"):
+            set_reg_image(pharmacy.get("regImageId"), user, serializer.instance)
+        serializer.save()
+        return {"ok": True, "data": serializer.data}
+    except ValidationError as e:
+        return {"ok": False, "data": e.detail}
+
+
+def set_user_profile(user, profile):
+    if profile.get("licenseImgId"):
+        set_license_image(profile.get("licenseImgId"), user)
+    data = {
+        "username": profile.get("username"),
+        "phone": profile.get("phone"),
+        "avatar": profile.get("avatarImgId"),
+        "license_number": profile.get("licenseNum"),
+        "address_sido_code": profile.get("sidoCode"),
+        "address_sgg_code": profile.get("sggCode"),
+        "address_str": profile.get("addressStr"),
+    }
+    serializer = SignupUserSerializer(
+        user,
+        data=data,
+    )
+    try:
+        serializer.is_valid(raise_exception=True)
+        serializer.instance.is_complete = True
+        serializer.instance.save()
+        serializer.save()
+        return {"ok": True, "data": serializer.data}
+    except ValidationError as e:
+        return {"ok": False, "data": e.detail}
 
 
 class Me(APIView):
@@ -91,24 +117,7 @@ class Signup(APIView):
         # user sent signup data
         # it maybe only user or with pharmacy data
         print(request.data)
-        request.data = {
-            "user": {
-                "username": "ㅁㅇㄴ",
-                "licenseNum": "11111",
-                "sidoCode": "11",
-                "sggCode": "650",
-                "addressStr": "서울특별시 서초구",
-            },
-            "pharmacy": {
-                "title": "ABC약국",
-                "regNum": "3333333333",
-                "addressDetail": "1",
-                "sidoCode": "11",
-                "sggCode": "650",
-                "strAddress": "서울 서초구 강남대로 27",
-                "ok": True,
-            },
-        }
+
         # first set userprofile
         user_profile = set_user_profile(request.user, request.data.get("user"))
         print("USERPROFILE", user_profile.get("data"))
@@ -121,24 +130,21 @@ class Signup(APIView):
         # user porfile saved.
         # let's check if there is pharmacy data
         pharmacy_data = request.data.get("pharmacy")
+
         if not pharmacy_data:
             # 개국약사인 경우 여기서 끝
+            # is_complete True
             return Response(
                 {"ok": True, "data": {"user": user_profile.get("data")["username"]}}
             )
 
         # 약국 정보 입력하기
-        def set_pharmacy_profile(user, pharmacy):
-            data = {
-                "title": pharmacy.get("title"),
-                "owner": user,
-                "reg_number": pharmacy.get("regNum"),
-                "address_str": pharmacy.get("strAddress"),
-                "address_detail": pharmacy.get("addressDetail"),
-                "address_sido_code": pharmacy.get("sidoCode"),
-                "address_sgg_code": pharmacy.get("sggCode"),
-            }
-            serializer = PharmacySerializer(data=data)
+        pharmacy_profile = set_pharmacy_profile(request.user, pharmacy_data)
+        if not pharmacy_data.get("ok"):
+            return Response(
+                {"ok": False, "data": pharmacy_profile.get("data")},
+                status=HTTP_400_BAD_REQUEST,
+            )
 
         return Response({"ok": True}, status=HTTP_200_OK)
 

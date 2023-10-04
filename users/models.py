@@ -53,8 +53,10 @@ class User(AbstractUser):
         null=True,
         blank=True,
     )
-    avatar = models.URLField(
+    avatar = models.CharField(
+        max_length=50,
         null=True,
+        blank=True,
     )
 
     # pharmacist

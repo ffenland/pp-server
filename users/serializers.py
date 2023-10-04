@@ -67,8 +67,9 @@ class SignupUserSerializer(ModelSerializer):
         model = User
         fields = (
             "username",
+            "phone",
             "license_number",
-            "license_img",
+            "avatar",
             "address_sido_code",
             "address_sgg_code",
             "address_str",
@@ -85,6 +86,6 @@ class SignupUserSerializer(ModelSerializer):
             ]
             for field in required_fields:
                 if data.get(field) is None:
-                    raise ValidationError({field: ["This field is required."]})
+                    raise ValidationError({field: [f"{field} field is required."]})
 
             return data

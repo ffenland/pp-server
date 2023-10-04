@@ -26,7 +26,6 @@ class CustomUserAdmin(UserAdmin):
                     "phone",
                     "naver_id",
                     "kakao_id",
-                    "license_img",
                 ),
             },
         ),
@@ -42,14 +41,7 @@ class CustomUserAdmin(UserAdmin):
         ),
         (
             ("일자리 정보"),
-            {
-                "fields": (
-                    "address_sido_code",
-                    "address_sgg_code",
-                    "address_sido",
-                    "address_sgg",
-                )
-            },
+            {"fields": ("address_sido_code", "address_sgg_code", "address_str")},
         ),
         (
             ("Permissions"),
