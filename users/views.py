@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
-from rest_framework.exceptions import ParseError, NotFound
+from rest_framework.exceptions import ParseError, NotFound, ValidationError
 from rest_framework.status import (
     HTTP_400_BAD_REQUEST,
     HTTP_200_OK,
@@ -13,9 +13,15 @@ from rest_framework.status import (
     HTTP_201_CREATED,
 )
 
-from .serializers import MeUserSerializer, PublicUserSerializer, PrivateUserSerializer
+from .serializers import (
+    MeUserSerializer,
+    PublicUserSerializer,
+    PrivateUserSerializer,
+    SignupUserSerializer,
+)
 from .models import User
 from schedules.models import Resume
+from pharmacies.serializers import PharmacySerializer
 import requests
 
 
@@ -25,6 +31,27 @@ def make_ran_username():
         ran_name = f"{get_random_string(length=6)}_N"
         if not User.objects.filter(username=ran_name).exists():
             return ran_name
+
+
+def set_user_profile(user, profile):
+    data = {
+        "username": profile.get("username"),
+        "license_number": profile.get("licenseNum"),
+        "license_img": profile.get("licenseImg"),
+        "address_sido_code": profile.get("sidoCode"),
+        "address_sgg_code": profile.get("sggCode"),
+        "address_str": profile.get("addressStr"),
+    }
+    serializer = SignupUserSerializer(
+        user,
+        data=data,
+    )
+    try:
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return {"ok": True, "data": serializer.data}
+    except ValidationError as e:
+        return {"ok": False, "data": e.detail}
 
 
 class Me(APIView):
@@ -38,6 +65,8 @@ class Me(APIView):
 
 class Signup(APIView):
     def post(self, request):
+        # user sent signup data
+        # it maybe only user or with pharmacy data
         print(request.data)
         data = {
             "user": {
@@ -57,6 +86,37 @@ class Signup(APIView):
                 "ok": True,
             },
         }
+        # first set userprofile
+        user_profile = set_user_profile(request.user, request.data.get("user"))
+        print("USERPROFILE", user_profile.get("data"))
+        if not user_profile.get("ok"):
+            # 유저에게 뭐가 문제인지 자세히 설명해주자.
+            return Response(
+                {"ok": False, "data": user_profile.get("data")},
+                status=HTTP_400_BAD_REQUEST,
+            )
+        # user porfile saved.
+        # let's check if there is pharmacy data
+        pharmacy_data = request.data.get("pharmacy")
+        if not pharmacy_data:
+            # 개국약사인 경우 여기서 끝
+            return Response(
+                {"ok": True, "data": {"user": user_profile.get("data")["username"]}}
+            )
+
+        # 약국 정보 입력하기
+        def set_pharmacy_profile(user, pharmacy):
+            data = {
+                "title": pharmacy.get("title"),
+                "owner": user,
+                "reg_number": pharmacy.get("regNum"),
+                "address_str": pharmacy.get("strAddress"),
+                "address_detail": pharmacy.get("addressDetail"),
+                "address_sido_code": pharmacy.get("sidoCode"),
+                "address_sgg_code": pharmacy.get("sggCode"),
+            }
+            serializer = PharmacySerializer(data=data)
+
         return Response({"ok": True}, status=HTTP_200_OK)
 
 
