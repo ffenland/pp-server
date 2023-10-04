@@ -21,7 +21,12 @@ from .serializers import (
 )
 from .models import User
 from schedules.models import Resume
+<<<<<<< HEAD
 from pharmacies.serializers import PharmacySerializer
+=======
+from medias.models import Photo
+from pharmacies.models import Pharmacy
+>>>>>>> bb142ddcef2877ac6e8beab8934f3b5fd8d6297d
 import requests
 
 
@@ -33,6 +38,7 @@ def make_ran_username():
             return ran_name
 
 
+<<<<<<< HEAD
 def set_user_profile(user, profile):
     data = {
         "username": profile.get("username"),
@@ -52,6 +58,23 @@ def set_user_profile(user, profile):
         return {"ok": True, "data": serializer.data}
     except ValidationError as e:
         return {"ok": False, "data": e.detail}
+=======
+def set_license_image(cf_id, uploader):
+    Photo.objects.create(
+        cf_id=cf_id,
+        uploader=uploader,
+        description="License Image",
+    )
+
+
+def set_reg_image(cf_id, uploader, pharmacy):
+    Photo.objects.create(
+        cf_id=cf_id,
+        uploader=uploader,
+        description="Registration Image",
+        pharmacy=pharmacy.id,
+    )
+>>>>>>> bb142ddcef2877ac6e8beab8934f3b5fd8d6297d
 
 
 class Me(APIView):
@@ -68,7 +91,7 @@ class Signup(APIView):
         # user sent signup data
         # it maybe only user or with pharmacy data
         print(request.data)
-        data = {
+        request.data = {
             "user": {
                 "username": "ㅁㅇㄴ",
                 "licenseNum": "11111",

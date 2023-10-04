@@ -62,7 +62,7 @@ class User(AbstractUser):
         max_length=6,
         null=True,
     )
-    license_img = models.URLField(null=True)
+
     college = models.CharField(
         max_length=20,
         null=True,
