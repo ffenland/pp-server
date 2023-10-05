@@ -75,15 +75,11 @@ class HomeSchedules(generics.ListAPIView):
 
     def get_queryset(self):
         address_sido_code = self.request.user.address_sido_code
-        profile_setted = True
         if not address_sido_code:
             address_sido_code = "11"
-            profile_setted = False
         queryset = Resume.objects.filter(
-            address_sido_code=address_sido_code,
-        ).order_by(
-            "-created_at"
-        )[:5]
+            user__address_sido_code=address_sido_code,
+        ).order_by("-created_at")[:5]
 
         return queryset
 
@@ -97,14 +93,25 @@ class ResumeView(APIView):
     def get(self, request):
         sido_code = request.query_params.get("sido")
         sgg_code = request.query_params.get("sgg")
+        print("SIDOCODE", sido_code)
+        print("SGGCODE", sgg_code)
+        if not sido_code or not sgg_code:
+            return Response(
+                {"ok": False, "resumes": {}, "recruits": {}},
+                status=HTTP_400_BAD_REQUEST,
+            )
 
         one_week_ago = timezone.now() - timedelta(days=7)
 
         recruits = Resume.objects.filter(
-            is_recruit=True, address_sido_code=sido_code, created_at__gte=one_week_ago
+            is_recruit=True,
+            user__address_sido_code=sido_code,
+            # created_at__gte=one_week_ago,
         ).order_by("-created_at")[:5]
         resumes = Resume.objects.filter(
-            is_recruit=False, address_sgg_code=sgg_code, created_at__gte=one_week_ago
+            is_recruit=False,
+            user__address_sido_code=sido_code,
+            # created_at__gte=one_week_ago,
         ).order_by("-created_at")[:5]
         resume_serializer = ResumeSerializer(resumes, many=True)
         recruit_serializer = ResumeSerializer(recruits, many=True)

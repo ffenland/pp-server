@@ -338,7 +338,7 @@ class UserAddress(APIView):
                     "data": {
                         "sidoCode": sido_code,
                         "sggCode": sgg_code,
-                        "address_str": address_str,
+                        "addressStr": address_str,
                     },
                 },
                 status=HTTP_200_OK,
@@ -363,9 +363,7 @@ class UserAddress(APIView):
             # Edit User Info
             user = request.user
             user.address_sido_code = sido.get("code")
-            user.address_sido = sido.get("name")
             user.address_sgg_code = sgg.get("code")
-            user.address_sgg = sgg.get("name")
             user.save()
             return Response({"ok": True}, status=HTTP_202_ACCEPTED)
         else:

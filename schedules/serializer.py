@@ -41,6 +41,10 @@ class ScheduleWithDaysSerializer(ModelSerializer):
 
 class ResumeSerializer(ModelSerializer):
     schedule = ScheduleWithDaysSerializer()
+    address_sido_code = ReadOnlyField()
+    address_sgg_code = ReadOnlyField()
+    address_str = ReadOnlyField()
+    is_regular = ReadOnlyField()
 
     class Meta:
         model = Resume
@@ -53,11 +57,13 @@ class HomeScheduleSerializer(ModelSerializer):
     class Meta:
         model = Resume
         fields = (
+            "id",
             "is_recruit",
             "is_regular",
             "schedule",
             "address_sido_code",
             "address_sgg_code",
+            "address_str",
             "created_at",
         )
 
