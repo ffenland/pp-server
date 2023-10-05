@@ -19,6 +19,7 @@ from .serializers import (
     PublicUserSerializer,
     PrivateUserSerializer,
     SignupUserSerializer,
+    MiniProfileSerializer,
 )
 from .models import User
 from schedules.models import Resume
