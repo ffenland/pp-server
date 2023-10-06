@@ -365,6 +365,7 @@ class UserAddress(APIView):
             user = request.user
             user.address_sido_code = sido.get("code")
             user.address_sgg_code = sgg.get("code")
+            user.address_str = f"{sido.get('name')} {sgg.get('name')}"
             user.save()
             return Response({"ok": True}, status=HTTP_202_ACCEPTED)
         else:

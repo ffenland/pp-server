@@ -68,6 +68,17 @@ class HomeScheduleSerializer(ModelSerializer):
         )
 
 
+class ProfileResumeSerializer(ModelSerializer):
+    schedule = ScheduleWithDaysSerializer()
+
+    class Meta:
+        model = Resume
+        fields = (
+            "schedule",
+            "id",
+        )
+
+
 class ResumeDetailSerializer(ModelSerializer):
     schedule = ScheduleWithDaysSerializer()
     is_regular = ReadOnlyField()

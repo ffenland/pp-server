@@ -2,6 +2,7 @@ from rest_framework.serializers import ModelSerializer
 from rest_framework.exceptions import ValidationError
 from .models import User
 from pharmacies.serializers import PharmacySerializer
+from schedules.serializer import ProfileResumeSerializer
 
 
 class TinyUserSerializer(ModelSerializer):
@@ -40,6 +41,15 @@ class MeUserSerializer(ModelSerializer):
 
 class PrivateUserSerializer(ModelSerializer):
     pharmacy = PharmacySerializer()
+    resume = ProfileResumeSerializer(source="resume_set", many=True, read_only=True)
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        is_naver = bool(data.get("naver_id"))
+        is_kakao = bool(data.get("kakao_id"))
+
+        data.update({"naver_id": is_naver, "kakao_id": is_kakao})
+        return data
 
     class Meta:
         model = User
@@ -48,6 +58,7 @@ class PrivateUserSerializer(ModelSerializer):
             "password",
             "first_name",
             "last_name",
+            "license_number",
             "is_superuser",
             "is_staff",
             "is_active",
