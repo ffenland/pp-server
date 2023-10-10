@@ -61,6 +61,7 @@ class User(AbstractUser):
 
     # pharmacist
     license_number = models.CharField(
+        unique=True,
         max_length=6,
         null=True,
     )

@@ -30,7 +30,7 @@ class ChatRoom(CommonPKModel, CommonModel):
     )
 
     def __str__(self):
-        return f"{self.first_user.username} & {self.second_user.username} Chat"
+        return f"{self.first_user.username if self.first_user else 'noname'} & {self.second_user.username if self.second_user else 'noname2'} Chat"
 
 
 class ChatMessage(CommonPKModel, CommonModel):

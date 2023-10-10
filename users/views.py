@@ -50,7 +50,7 @@ def set_reg_image(cf_id, uploader, pharmacy):
         cf_id=cf_id,
         uploader=uploader,
         description="Registration Image",
-        pharmacy=pharmacy.id,
+        pharmacy=pharmacy,
     )
 
 
@@ -101,7 +101,16 @@ def set_user_profile(user, profile):
         serializer.save()
         return {"ok": True, "data": serializer.data}
     except ValidationError as e:
-        return {"ok": False, "data": e.detail}
+        error_messages = {}
+        for field, errors in e.detail.items():
+            if field == "username":
+                error_messages["username"] = "이미 해당 닉네임은 사용중입니다."
+            if field == "phone":
+                error_messages["phone"] = "유효하지 않거나 이미 등록된 번호입니다."
+            if field == "license_number":
+                error_messages["license_number"] = "이미 등록된 면허번호입니다."
+        print(error_messages)
+        return {"ok": False, "data": error_messages}
 
 
 class Me(APIView):
@@ -121,7 +130,7 @@ class Signup(APIView):
 
         # first set userprofile
         user_profile = set_user_profile(request.user, request.data.get("user"))
-        print("USERPROFILE", user_profile.get("data"))
+
         if not user_profile.get("ok"):
             # 유저에게 뭐가 문제인지 자세히 설명해주자.
             return Response(
@@ -133,7 +142,7 @@ class Signup(APIView):
         pharmacy_data = request.data.get("pharmacy")
 
         if not pharmacy_data:
-            # 개국약사인 경우 여기서 끝
+            # 근무약사인 경우 여기서 끝
             # is_complete True
             return Response(
                 {"ok": True, "data": {"user": user_profile.get("data")["username"]}}
