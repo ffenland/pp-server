@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
 import uuid
-from common.models import CommonPKModel
+from common.utils import cf_id_to_url
 
 
 class User(AbstractUser):
@@ -93,3 +93,14 @@ class User(AbstractUser):
         max_length=20,
         null=True,
     )
+
+    @property
+    def license_image(self):
+        return (
+            cf_id_to_url(
+                self.photo_set.filter(description="License Image").first().cf_id,
+                "avatar",
+            )
+            if self.photo_set.filter(description="License Image").first()
+            else "면허증 미첨부"
+        )

@@ -23,7 +23,7 @@ from .serializers import (
 )
 from .models import User
 from schedules.models import Resume
-from pharmacies.serializers import PharmacySerializer
+
 from medias.models import Photo
 from pharmacies.models import Pharmacy
 import requests
@@ -45,39 +45,6 @@ def set_license_image(cf_id, uploader):
     )
 
 
-def set_reg_image(cf_id, uploader, pharmacy):
-    Photo.objects.create(
-        cf_id=cf_id,
-        uploader=uploader,
-        description="Registration Image",
-        pharmacy=pharmacy,
-    )
-
-
-def set_pharmacy_profile(user, pharmacy):
-    user.is_owner = True
-    user.save()
-    data = {
-        "title": pharmacy.get("title"),
-        "owner": user.id,
-        "reg_number": pharmacy.get("regNum"),
-        "address_str": pharmacy.get("strAddress"),
-        "address_detail": pharmacy.get("addressDetail"),
-        "address_sido_code": pharmacy.get("sidoCode"),
-        "address_sgg_code": pharmacy.get("sggCode"),
-    }
-    serializer = PharmacySerializer(data=data)
-    try:
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        if pharmacy.get("regImageId"):
-            set_reg_image(pharmacy.get("regImageId"), user, serializer.instance)
-        serializer.save()
-        return {"ok": True, "data": serializer.data}
-    except ValidationError as e:
-        return {"ok": False, "data": e.detail}
-
-
 def set_user_profile(user, profile):
     if profile.get("licenseImgId"):
         set_license_image(profile.get("licenseImgId"), user)
@@ -96,9 +63,9 @@ def set_user_profile(user, profile):
     )
     try:
         serializer.is_valid(raise_exception=True)
-        serializer.instance.is_complete = True
-        serializer.instance.save()
         serializer.save()
+        user.is_complete = True
+        user.save()
         return {"ok": True, "data": serializer.data}
     except ValidationError as e:
         error_messages = {}
@@ -109,7 +76,7 @@ def set_user_profile(user, profile):
                 error_messages["phone"] = "유효하지 않거나 이미 등록된 번호입니다."
             if field == "license_number":
                 error_messages["license_number"] = "이미 등록된 면허번호입니다."
-        print(error_messages)
+
         return {"ok": False, "data": error_messages}
 
 
@@ -125,8 +92,6 @@ class Me(APIView):
 class Signup(APIView):
     def post(self, request):
         # user sent signup data
-        # it maybe only user or with pharmacy data
-        print(request.data)
 
         # first set userprofile
         user_profile = set_user_profile(request.user, request.data.get("user"))
@@ -138,25 +103,11 @@ class Signup(APIView):
                 status=HTTP_400_BAD_REQUEST,
             )
         # user porfile saved.
-        # let's check if there is pharmacy data
-        pharmacy_data = request.data.get("pharmacy")
 
-        if not pharmacy_data:
-            # 근무약사인 경우 여기서 끝
-            # is_complete True
-            return Response(
-                {"ok": True, "data": {"user": user_profile.get("data")["username"]}}
-            )
-
-        # 약국 정보 입력하기
-        pharmacy_profile = set_pharmacy_profile(request.user, pharmacy_data)
-        if not pharmacy_data.get("ok"):
-            return Response(
-                {"ok": False, "data": pharmacy_profile.get("data")},
-                status=HTTP_400_BAD_REQUEST,
-            )
-
-        return Response({"ok": True}, status=HTTP_200_OK)
+        # is_complete True
+        return Response(
+            {"ok": True, "data": {"user": user_profile.get("data")["username"]}}
+        )
 
 
 class NaverLogin(APIView):

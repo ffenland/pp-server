@@ -73,3 +73,8 @@ def convert_code_to_str(code):
     except Exception as e:
         print(e)
         return None
+
+
+def cf_id_to_url(cf_id, variant):
+    variant = variant if variant else "public"
+    return f"https://imagedelivery.net/4qM0nUySNuH-4XE1BufwsQ/{cf_id}/{variant}"

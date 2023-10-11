@@ -18,12 +18,13 @@ from rest_framework.exceptions import (
     NotFound,
     NotAuthenticated,
     ParseError,
-    PermissionDenied,
+    ValidationError,
 )
 from rest_framework.pagination import CursorPagination
 from collections import defaultdict
 from .models import Pharmacy, Account
-from .serializers import PharmacyAccountSerializer
+from .serializers import PharmacyAccountSerializer, PharmacySerializer
+from medias.models import Photo
 
 
 def organize_accounts_by_date(accounts):
@@ -37,6 +38,55 @@ def organize_accounts_by_date(accounts):
         organized_data[date_str][account.name] = account.ammount
 
     return dict(sorted(organized_data.items(), reverse=False))
+
+
+def set_reg_image(cf_id, uploader, pharmacy):
+    Photo.objects.create(
+        cf_id=cf_id,
+        uploader=uploader,
+        description="Registration Image",
+        pharmacy=pharmacy,
+    )
+
+
+def set_pharmacy_profile(user, pharmacy):
+    user.is_owner = True
+    user.save()
+    data = {
+        "title": pharmacy.get("title"),
+        "owner": user,
+        "reg_number": pharmacy.get("regNum"),
+        "address_str": pharmacy.get("strAddress"),
+        "address_detail": pharmacy.get("addressDetail"),
+        "address_sido_code": pharmacy.get("sidoCode"),
+        "address_sgg_code": pharmacy.get("sggCode"),
+    }
+    serializer = PharmacySerializer(data=data)
+    try:
+        serializer.is_valid(raise_exception=True)
+        if pharmacy.get("regImageId"):
+            set_reg_image(pharmacy.get("regImageId"), user, serializer.instance)
+        serializer.save()
+        user.is_owner_complete = True
+        user.save()
+        return {"ok": True, "data": serializer.data}
+    except ValidationError as e:
+        return {"ok": False, "data": e.detail}
+
+
+class PharmacyCreate(APIView):
+    def post(self, request):
+        pharmacy_data = request.data.get("pharmacy")
+        pharmacy_profile = set_pharmacy_profile(request.user, pharmacy_data)
+        if not pharmacy_data.get("ok"):
+            return Response(
+                {"ok": False, "data": pharmacy_profile.get("data")},
+                status=HTTP_400_BAD_REQUEST,
+            )
+        else:
+            return Response(
+                {"ok": True, "data": pharmacy_profile.get("data")}, status=HTTP_200_OK
+            )
 
 
 class PharmacyAccountView(APIView):

@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
+from django.utils.html import mark_safe
 from .models import User
 
 # Register your models here.
@@ -7,6 +8,14 @@ from .models import User
 
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
+    def license_image_display(self, obj):
+        return (
+            mark_safe(f'<img src="{obj.license_image}" width="100" height="100" />')
+            if obj.license_image != "면허증 미첨부"
+            else "면허증 미첨부"
+        )
+
+    license_image_display.short_description = "License_Image"
     fieldsets = (
         (
             None,
@@ -16,6 +25,7 @@ class CustomUserAdmin(UserAdmin):
                     "email",
                     "is_owner",
                     "is_complete",
+                    "is_approved",
                 )
             },
         ),
@@ -67,4 +77,10 @@ class CustomUserAdmin(UserAdmin):
             },
         ),
     )
-    list_display = ("username", "email")
+    list_display = (
+        "username",
+        "email",
+        "license_image_display",
+        "is_approved",
+    )
+    list_filter = ("is_approved",)
