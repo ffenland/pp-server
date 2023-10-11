@@ -3,6 +3,7 @@ from . import views
 
 urlpatterns = [
     path("", views.ResumeView.as_view()),
+    path("my/", views.MyResume.as_view()),
     path("edit/", views.ResumeEdit.as_view()),
     path("home/", views.HomeSchedules.as_view()),
     path("howmany/", views.CountResume.as_view()),

@@ -54,7 +54,7 @@ def set_pharmacy_profile(user, pharmacy):
     user.save()
     data = {
         "title": pharmacy.get("title"),
-        "owner": user,
+        "owner": user.id,
         "reg_number": pharmacy.get("regNum"),
         "address_str": pharmacy.get("strAddress"),
         "address_detail": pharmacy.get("addressDetail"),
@@ -76,9 +76,9 @@ def set_pharmacy_profile(user, pharmacy):
 
 class PharmacyCreate(APIView):
     def post(self, request):
-        pharmacy_data = request.data.get("pharmacy")
+        pharmacy_data = request.data
         pharmacy_profile = set_pharmacy_profile(request.user, pharmacy_data)
-        if not pharmacy_data.get("ok"):
+        if not pharmacy_profile.get("ok"):
             return Response(
                 {"ok": False, "data": pharmacy_profile.get("data")},
                 status=HTTP_400_BAD_REQUEST,

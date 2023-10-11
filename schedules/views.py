@@ -1,6 +1,6 @@
 import traceback
 
-from django.db.models import Count
+from django.db.models import Count, Q
 from datetime import datetime, timedelta
 from django.utils import timezone
 from rest_framework import generics
@@ -22,7 +22,7 @@ from rest_framework.exceptions import (
 from .models import Schedule, Day, Resume
 from .serializer import (
     DaySerializer,
-    ScheduleWithDaysSerializer,
+    ProfileResumeSerializer,
     HomeScheduleSerializer,
     ResumeSerializer,
     ResumeDetailSerializer,
@@ -91,26 +91,23 @@ class ResumeView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        sido_code = request.query_params.get("sido")
-        sgg_code = request.query_params.get("sgg")
-        print("SIDOCODE", sido_code)
-        print("SGGCODE", sgg_code)
-        if not sido_code or not sgg_code:
-            return Response(
-                {"ok": False, "resumes": {}, "recruits": {}},
-                status=HTTP_400_BAD_REQUEST,
-            )
+        sido_code = request.user.address_sido_code
+        sgg_code = request.user.address_sgg_code
 
         one_week_ago = timezone.now() - timedelta(days=7)
 
         recruits = Resume.objects.filter(
+            ~Q(user=request.user),
             is_recruit=True,
             user__address_sido_code=sido_code,
+            user__address_sgg_code=sgg_code,
             # created_at__gte=one_week_ago,
         ).order_by("-created_at")[:5]
         resumes = Resume.objects.filter(
+            ~Q(user=request.user),
             is_recruit=False,
             user__address_sido_code=sido_code,
+            user__address_sgg_code=sgg_code,
             # created_at__gte=one_week_ago,
         ).order_by("-created_at")[:5]
         resume_serializer = ResumeSerializer(resumes, many=True)
@@ -129,7 +126,6 @@ class ResumeView(APIView):
         is_recruit = request.user.is_owner
         description = request.data.get("data").get("description")
         working_days = request.data.get("data").get("workingDays")
-        address = request.data.get("data").get("address")
         schedule = find_or_create_schedule(working_days=working_days)
         if schedule and description and len(description) > 10:
             schedule_id = schedule.id
@@ -139,8 +135,6 @@ class ResumeView(APIView):
                 schedule_id=schedule_id,
                 defaults={"description": description},
                 is_recruit=is_recruit,
-                address_sido_code=address.get("sidoCode"),
-                address_sgg_code=address.get("sggCode"),
             )
 
             serializer = ResumeSerializer(obj)
@@ -314,3 +308,20 @@ class CountResume(APIView):
         except Exception as e:
             print(e)
             raise ParseError
+
+
+class MyResume(APIView):
+    def get_object(self, user):
+        return Resume.objects.filter(user=user).first()
+
+    def get(self, request):
+        resume = self.get_object(request.user)
+        if not resume:
+            return Response(
+                {
+                    "ok": False,
+                }
+            )
+        else:
+            serializer = ProfileResumeSerializer(resume)
+            return Response({"ok": True, "data": serializer.data})
