@@ -323,5 +323,6 @@ class MyResume(APIView):
                 }
             )
         else:
-            serializer = ProfileResumeSerializer(resume)
+            serializer = ResumeSerializer(resume)
+
             return Response({"ok": True, "data": serializer.data})

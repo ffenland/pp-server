@@ -41,14 +41,14 @@ class ScheduleWithDaysSerializer(ModelSerializer):
 
 class ResumeSerializer(ModelSerializer):
     schedule = ScheduleWithDaysSerializer()
-    address_sido_code = ReadOnlyField()
-    address_sgg_code = ReadOnlyField()
-    address_str = ReadOnlyField()
     is_regular = ReadOnlyField()
 
     class Meta:
         model = Resume
-        exclude = ("description",)
+        exclude = (
+            "description",
+            "updated_at",
+        )
 
 
 class HomeScheduleSerializer(ModelSerializer):
@@ -76,6 +76,7 @@ class ProfileResumeSerializer(ModelSerializer):
         fields = (
             "schedule",
             "id",
+            "is_recruit",
         )
 
 
