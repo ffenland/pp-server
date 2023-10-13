@@ -20,7 +20,7 @@ from .models import ChatRoom, ChatMessage
 from .serializers import ChatRommSerializer, ChatMessageSerializer
 
 
-class ChatRoomListView(APIView):
+class ChatView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_objects(self, user):
@@ -56,6 +56,39 @@ class ChatRoomListView(APIView):
             )
 
         return Response({"ok": True, "data": response_data})
+
+    def post(self, request):
+        first_user = request.data.get("firstUserId")
+        second_user = request.data.get("secondUserId")
+        if first_user == None or second_user == None:
+            return Response(
+                {"ok": False, "data": {"erm": "user ID value is worng."}},
+                status=HTTP_400_BAD_REQUEST,
+            )
+        # Ensure that first_user and second_user are in ascending order.
+        if first_user > second_user:
+            first_user, second_user = second_user, first_user
+
+        chat_room_list = ChatRoom.objects.filter(
+            first_user_id=first_user, second_user_id=second_user
+        )
+        if len(chat_room_list):
+            chat_room = chat_room_list.first()
+
+        else:
+            try:
+                chat_room = ChatRoom.objects.create(
+                    first_user_id=first_user, second_user_id=second_user
+                )
+
+            except:
+                # 사용자를 찾을 수 없을 경우 예외 처리를 수행할 수 있습니다.
+                return Response(
+                    {"ok": False, "data": {"erm": "wrong user Id"}},
+                    status=HTTP_400_BAD_REQUEST,
+                )
+
+        return Response({"ok": True, "data": {"chatRoomId": chat_room.id}})
 
 
 class ChatRoomView(APIView):
