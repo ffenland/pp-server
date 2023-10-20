@@ -69,6 +69,7 @@ class User(AbstractUser):
     college = models.CharField(
         max_length=20,
         null=True,
+        blank=True,
     )
     year_of_admission = models.IntegerField(
         validators=[MinValueValidator(1900), MaxValueValidator(2150)],

@@ -61,9 +61,6 @@ class HomeScheduleSerializer(ModelSerializer):
             "is_recruit",
             "is_regular",
             "schedule",
-            "address_sido_code",
-            "address_sgg_code",
-            "address_str",
             "created_at",
         )
 

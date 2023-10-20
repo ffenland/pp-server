@@ -70,18 +70,30 @@ def find_or_create_schedule(working_days):
             return schedule
 
 
-class HomeSchedules(generics.ListAPIView):
+class HomeSchedules(APIView):
     serializer_class = HomeScheduleSerializer
 
-    def get_queryset(self):
-        address_sido_code = self.request.user.address_sido_code
+    def get(self, request):
+        address_sido_code = request.user.address_sido_code
+        address_sgg_code = request.user.address_sgg_code
         if not address_sido_code:
             address_sido_code = "11"
-        queryset = Resume.objects.filter(
+        resumes = Resume.objects.filter(
             user__address_sido_code=address_sido_code,
-        ).order_by("-created_at")[:5]
+            user__address_sgg_code=address_sgg_code,
+            is_recruit = False
+        ).exclude(user=request.user,).order_by("-created_at")[:5]
+        resumes_serializer = HomeScheduleSerializer(resumes, many=True)
+        recruits = Resume.objects.filter(
+            user__address_sido_code=address_sido_code,
+            user__address_sgg_code=address_sgg_code,
+            is_recruit = True
+        ).exclude(user=request.user,).order_by("-created_at")[:5]
+        recruits_serializer = HomeScheduleSerializer(recruits, many=True)
+        return Response({"ok":True, "data":{"resumes":resumes_serializer.data, "recruits":recruits_serializer.data,}})
 
-        return queryset
+
+    
 
 
 # Create your views here.
