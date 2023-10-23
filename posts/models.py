@@ -6,10 +6,6 @@ from common.models import CommonModel, CommonPKModel
 
 
 class Post(CommonModel, CommonPKModel):
-    class PostKindChoices(models.TextChoices):
-        QUE = ("question", "질문")
-        LIFE = ("life", "일상")
-        INFO = ("info", "정보")
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -20,7 +16,7 @@ class Post(CommonModel, CommonPKModel):
     )
     kind = models.CharField(
         max_length=8,
-        choices=PostKindChoices.choices,
+        
     )
     article = models.TextField()
     view_count = models.PositiveIntegerField(

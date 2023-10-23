@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from django.utils.timezone import make_aware
-from django.db.models import Q
+from django.db.models import Q,F
 from django.utils.dateformat import DateFormat
 from django.core.cache import cache
 
@@ -12,6 +12,7 @@ from rest_framework.response import Response
 from rest_framework.status import (
     HTTP_204_NO_CONTENT,
     HTTP_200_OK,
+    HTTP_202_ACCEPTED,
     HTTP_201_CREATED,
     HTTP_400_BAD_REQUEST,
 )
@@ -45,9 +46,7 @@ class PostListView(generics.ListAPIView):
     pagination_class = PostListPagination
 
     def get_queryset(self):
-        kind_param = self.request.query_params.get("kind", None)
-        valid_choices = [choice[0] for choice in Post.PostKindChoices.choices]
-        kind = kind_param if kind_param in valid_choices else None
+        kind = self.request.query_params.get("kind", None)
         queryset = Post.objects.all()
         if kind:
             queryset = queryset.filter(kind=kind)
@@ -95,7 +94,7 @@ class PostCreateView(generics.CreateAPIView):
         else:
             traceback.print_exc()  # Print traceback
             print(serializer.errors)
-            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+            return Response({"ok":False, "data":{"erm":serializer.errors}}, status=HTTP_400_BAD_REQUEST)
 
 
 class PostDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -142,6 +141,23 @@ class PostDetailView(generics.RetrieveUpdateDestroyAPIView):
         return Response(serializer.errors, status=400)
 
 
+class PostCountView(APIView):
+    def get_object(self, pk):
+        try:
+            return Post.objects.get(pk=pk)
+        except Post.DoesNotExist:
+            return False
+    def get(self, request, pk):
+        post = self.get_object(pk=pk)
+        if post:
+            return Response({"ok":True, "data":{"count":post.view_count}})
+    def put(self, request, pk):
+        post = self.get_object(pk=pk)
+        if not post:
+            return Response({"ok":False}, status=HTTP_400_BAD_REQUEST)
+        post.update(view_count=F("view_count")+1)
+        return Response({"ok":True}, status=HTTP_202_ACCEPTED)
+        
 class ReplyView(APIView):
     def get_object(self, pk):
         try:
