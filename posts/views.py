@@ -42,16 +42,23 @@ class PostListPagination(PageNumberPagination):
 
 
 class PostListView(generics.ListAPIView):
+    permission_classes=[IsAuthenticated]
     serializer_class = PostListSerializer
     pagination_class = PostListPagination
 
     def get_queryset(self):
         kind = self.request.query_params.get("kind", None)
-        queryset = Post.objects.all()
+        if (kind == "cist" and self.request.user.is_owner):
+            return []
+        if (kind == "owner" and not self.request.user.is_owner):
+            return []
         if kind:
-            queryset = queryset.filter(kind=kind)
-        queryset = queryset.order_by("-created_at")
-        return queryset
+            queryset =  Post.objects.filter(kind=kind)
+            queryset = queryset.order_by("-created_at")
+            return queryset
+        else:
+            return []
+        
 
 
 class PostCreateView(generics.CreateAPIView):

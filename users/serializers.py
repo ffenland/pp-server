@@ -109,3 +109,13 @@ class SignupUserSerializer(ModelSerializer):
                     raise ValidationError({field: [f"{field} field is required."]})
 
             return data
+
+
+class ProfileEditSerializer(ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            "username",
+            "phone",
+            "avatar",
+        )

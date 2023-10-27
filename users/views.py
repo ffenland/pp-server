@@ -20,8 +20,9 @@ from .serializers import (
     PrivateUserSerializer,
     SignupUserSerializer,
     MiniProfileSerializer,
+    ProfileEditSerializer,
 )
-from .models import User
+from .models import User, UserStatus
 from schedules.models import Resume
 
 from medias.models import Photo
@@ -78,6 +79,25 @@ def set_user_profile(user, profile):
                 error_messages["license_number"] = "이미 등록된 면허번호입니다."
 
         return {"ok": False, "data": error_messages}
+
+
+def edit_user_profile(user, data):
+    user_status = UserStatus.objects.get(user=user)
+    data_to_modify = {}
+    # username, phone, avatar
+    if data.get("username") and user_status.username_modify_limit != 0:
+        # modify!!
+        data_to_modify["username"] = data.get("username")
+        pass
+    if data.get("phone"):
+        # modify!!
+        data_to_modify["phone"] = data.get("phone")
+        pass
+    if data.get("avatar"):
+        # modify!!
+        data_to_modify["avatar"] = data.get("avatar")
+        pass
+    pass
 
 
 class Me(APIView):
@@ -148,6 +168,8 @@ class NaverLogin(APIView):
                     )
                     user.set_unusable_password()
                     user.save()
+                    # create user status
+                    UserStatus.objects.create(user=user)
                     login(request, user)
                 return Response(status=HTTP_200_OK)
             else:
@@ -203,6 +225,8 @@ class KakaoLogin(APIView):
                     )
                     user.set_unusable_password()
                     user.save()
+                    # create user status
+                    UserStatus.objects.create(user=user)
                     login(request, user)
                 return Response(status=HTTP_200_OK)
             else:
@@ -281,6 +305,17 @@ class Profile(APIView):
             return Response(
                 {"ok": False, "error": serializer.errors}, status=HTTP_400_BAD_REQUEST
             )
+
+
+class ProfileEdit(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        if not user:
+            return Response({"ok": False, "data": {"erm": "User not exists"}})
+        serializer = ProfileEditSerializer(user)
+        return Response({"ok": True, "data": serializer.data})
 
 
 class UserAddress(APIView):

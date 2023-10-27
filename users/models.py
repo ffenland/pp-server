@@ -1,7 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 import uuid
+from common.models import CommonPKModel
 from common.utils import cf_id_to_url
 
 
@@ -66,16 +68,6 @@ class User(AbstractUser):
         null=True,
     )
 
-    college = models.CharField(
-        max_length=20,
-        null=True,
-        blank=True,
-    )
-    year_of_admission = models.IntegerField(
-        validators=[MinValueValidator(1900), MaxValueValidator(2150)],
-        default=1900,
-    )
-
     # for Owner
     is_owner_complete = models.BooleanField(
         default=False,
@@ -105,3 +97,24 @@ class User(AbstractUser):
             if self.photo_set.filter(description="License Image").first()
             else "면허증 미첨부"
         )
+
+
+class UserStatus(CommonPKModel):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    score = models.IntegerField(default=0)
+    username_modify_limit = models.PositiveIntegerField(default=3)
+
+
+class UserSchool(CommonPKModel):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    hakbun_modify_limit = models.PositiveIntegerField(default=1)
+    college = models.CharField(
+        max_length=20,
+        null=True,
+        blank=True,
+    )
+    hakbun = models.IntegerField
+    year_of_admission = models.IntegerField(
+        validators=[MinValueValidator(1900), MaxValueValidator(2150)],
+        default=1900,
+    )

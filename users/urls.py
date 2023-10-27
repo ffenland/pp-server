@@ -4,12 +4,13 @@ from .views import (
     KakaoLogin,
     Me,
     LogOut,
-    PublicUser,
     TestLogin,
+    ProfileEdit,
     Profile,
     UserAddress,
     UserResume,
     Signup,
+    PublicUser,
 )
 
 urlpatterns = [
@@ -20,6 +21,7 @@ urlpatterns = [
     path("signup/", Signup.as_view()),
     path("test-login/", TestLogin.as_view()),
     path("profile/", Profile.as_view()),
+    path("profile/edit/", ProfileEdit.as_view()),
     path("profile/address/", UserAddress.as_view()),
     path("resume/", UserResume.as_view()),
     path("@<str:id>/", PublicUser.as_view()),
