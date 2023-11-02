@@ -26,8 +26,9 @@ from .serializer import (
     HomeScheduleSerializer,
     ResumeSerializer,
     ResumeDetailSerializer,
+    ResumeLikeCountSerializer,
 )
-from records.models import ResumeRecord
+from records.models import ResumeLike
 
 
 def str_to_bool(value):
@@ -228,6 +229,7 @@ class ResumeDetailView(APIView):
 
     def get(self, request, pk):
         resume = self.get_object(pk)
+
         serializer = ResumeDetailSerializer(resume)
         return Response({"ok": True, "resume": serializer.data})
 
@@ -265,7 +267,7 @@ class ResumeDetailView(APIView):
             return Response({"ok": False}, status=HTTP_400_BAD_REQUEST)
 
 
-class ResumeRecordView(APIView):
+class ResumeLikeRecord(APIView):
     def get_object(self, pk):
         try:
             resume = Resume.objects.get(pk=pk)
@@ -274,55 +276,31 @@ class ResumeRecordView(APIView):
             raise NotFound
 
     def get(self, request, pk):
-        kind_param = request.query_params.get("kind")
-        kind = kind_param and kind_param.lower()
         resume = self.get_object(pk)
-        if kind not in [
-            "like",
-            "bad",
-            "fav",
-        ]:
-            return Response(
-                {"ok": False, "error": "Kind Error"},
-                status=HTTP_400_BAD_REQUEST,
-            )
-
-        record_count = resume.record_set.filter(kind=kind).count()
-        was_i = resume.record_set.filter(kind=kind, user=request.user).exists()
+        serializer = ResumeLikeCountSerializer(
+            resume,
+            context={"request": request},
+        )
 
         return Response(
-            {"ok": True, "data": {"count": record_count, "wasI": was_i}},
+            {"ok": True, "data": serializer.data},
         )
 
     def post(self, request, pk):
-        kind_param = request.query_params.get("kind")
-        kind = kind_param and kind_param.lower()
         resume = self.get_object(pk)
-        if kind not in [
-            "like",
-            "bad",
-            "fav",
-        ]:
-            return Response(
-                {"ok": False, "error": "Kind Error"},
-                status=HTTP_400_BAD_REQUEST,
-            )
-
         try:
-            record = Record.objects.get(
-                user=request.user,
-                kind=kind,
+            record = ResumeLike.objects.get(
                 resume=resume,
+                user=request.user,
             )
             record.delete()
-            return Response({"ok": True})
-        except Record.DoesNotExist:
-            Record.objects.create(
-                user=request.user,
-                kind=kind,
+        except ResumeLike.DoesNotExist:
+            # create
+            ResumeLike.objects.create(
                 resume=resume,
+                user=request.user,
             )
-            return Response({"ok": True})
+        return Response({"ok": True})
 
 
 class CountResume(APIView):

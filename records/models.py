@@ -9,19 +9,13 @@ class RecordKindChoice(models.TextChoices):
 
 
 # Create your models here.
-class ResumeRecord(models.Model):
+class ResumeLike(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
     )
-    kind = models.CharField(
-        max_length=4,
-        choices=RecordKindChoice.choices,
-    )
     resume = models.ForeignKey(
         "schedules.Resume",
-        null=True,
-        blank=True,
         on_delete=models.CASCADE,
     )
 

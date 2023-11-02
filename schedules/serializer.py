@@ -1,10 +1,11 @@
+from common.utils import convert_code_to_str
 from rest_framework.serializers import (
     ModelSerializer,
     ReadOnlyField,
     SerializerMethodField,
 )
+
 from .models import Day, Schedule, Resume
-from common.utils import convert_code_to_str
 
 
 class DaySerializer(ModelSerializer):
@@ -90,3 +91,22 @@ class ResumeDetailSerializer(ModelSerializer):
     def get_str_address(self, resume):
         code = resume.address_sido_code + resume.address_sgg_code
         return convert_code_to_str(code)
+
+
+class ResumeLikeCountSerializer(ModelSerializer):
+    like = SerializerMethodField()
+    was_i = SerializerMethodField()
+
+    def get_like(self, obj):
+        return obj.resumelike_set.count()
+
+    def get_was_i(self, obj):
+        current_user = self.context["request"].user
+        return obj.resumelike_set.filter(user=current_user).exists()
+
+    class Meta:
+        model = Resume
+        fields = (
+            "like",
+            "was_i",
+        )
