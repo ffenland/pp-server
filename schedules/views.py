@@ -27,7 +27,7 @@ from .serializer import (
     ResumeSerializer,
     ResumeDetailSerializer,
 )
-from records.models import Record
+from records.models import ResumeRecord
 
 
 def str_to_bool(value):
@@ -78,22 +78,39 @@ class HomeSchedules(APIView):
         address_sgg_code = request.user.address_sgg_code
         if not address_sido_code:
             address_sido_code = "11"
-        resumes = Resume.objects.filter(
-            user__address_sido_code=address_sido_code,
-            user__address_sgg_code=address_sgg_code,
-            is_recruit = False
-        ).exclude(user=request.user,).order_by("-created_at")[:5]
+        resumes = (
+            Resume.objects.filter(
+                user__address_sido_code=address_sido_code,
+                user__address_sgg_code=address_sgg_code,
+                is_recruit=False,
+            )
+            .exclude(
+                user=request.user,
+            )
+            .order_by("-created_at")[:5]
+        )
         resumes_serializer = HomeScheduleSerializer(resumes, many=True)
-        recruits = Resume.objects.filter(
-            user__address_sido_code=address_sido_code,
-            user__address_sgg_code=address_sgg_code,
-            is_recruit = True
-        ).exclude(user=request.user,).order_by("-created_at")[:5]
+        recruits = (
+            Resume.objects.filter(
+                user__address_sido_code=address_sido_code,
+                user__address_sgg_code=address_sgg_code,
+                is_recruit=True,
+            )
+            .exclude(
+                user=request.user,
+            )
+            .order_by("-created_at")[:5]
+        )
         recruits_serializer = HomeScheduleSerializer(recruits, many=True)
-        return Response({"ok":True, "data":{"resumes":resumes_serializer.data, "recruits":recruits_serializer.data,}})
-
-
-    
+        return Response(
+            {
+                "ok": True,
+                "data": {
+                    "resumes": resumes_serializer.data,
+                    "recruits": recruits_serializer.data,
+                },
+            }
+        )
 
 
 # Create your views here.
@@ -248,7 +265,7 @@ class ResumeDetailView(APIView):
             return Response({"ok": False}, status=HTTP_400_BAD_REQUEST)
 
 
-class ResumeRecord(APIView):
+class ResumeRecordView(APIView):
     def get_object(self, pk):
         try:
             resume = Resume.objects.get(pk=pk)

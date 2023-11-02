@@ -8,5 +8,5 @@ urlpatterns = [
     path("home/", views.HomeSchedules.as_view()),
     path("howmany/", views.CountResume.as_view()),
     path("<str:pk>/", views.ResumeDetailView.as_view()),
-    path("<str:pk>/record/", views.ResumeRecord.as_view()),
+    path("<str:pk>/record/", views.ResumeRecordView.as_view()),
 ]

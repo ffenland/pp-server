@@ -74,6 +74,7 @@ class ProfileResumeSerializer(ModelSerializer):
             "schedule",
             "id",
             "is_recruit",
+            "is_regular",
         )
 
 
