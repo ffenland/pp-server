@@ -11,6 +11,7 @@ from .views import (
     UserResume,
     Signup,
     PublicUser,
+    ProfileLikeResumes,
 )
 
 urlpatterns = [
@@ -23,6 +24,7 @@ urlpatterns = [
     path("profile/", Profile.as_view()),
     path("profile/edit/", ProfileEdit.as_view()),
     path("profile/address/", UserAddress.as_view()),
+    path("profile/like-resumes/", ProfileLikeResumes.as_view()),
     path("resume/", UserResume.as_view()),
     path("@<str:id>/", PublicUser.as_view()),
 ]

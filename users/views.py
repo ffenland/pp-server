@@ -24,7 +24,8 @@ from .serializers import (
 )
 from .models import User, UserStatus
 from schedules.models import Resume
-
+from schedules.serializer import DaySimpleSerializer
+from records.models import ResumeLike
 from medias.models import Photo
 from pharmacies.models import Pharmacy
 import requests
@@ -376,3 +377,31 @@ class UserResume(APIView):
             return Response({"ok": False})
         else:
             return Response({"ok": True, "resume": resume.id})
+
+
+class ProfileLikeResumes(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        resume_likes = ResumeLike.objects.filter(user=request.user)
+        resume_info_list = []
+        for resume_like in resume_likes:
+            days_list = []
+            for day in resume_like.resume.schedule.days.all():
+                days_list.append(
+                    {
+                        "date": day.date,
+                        "am": day.am,
+                        "pm": day.pm,
+                    }
+                )
+
+            resume_info = {
+                "id": resume_like.resume.id,
+                "days": days_list,
+                "user": resume_like.resume.user.username,
+                "isRecruit": resume_like.resume.is_recruit,
+            }
+            resume_info_list.append(resume_info)
+
+        return Response({"ok": True, "data": {"resumes": resume_info_list}})

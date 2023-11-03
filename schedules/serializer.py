@@ -18,6 +18,12 @@ class DaySerializer(ModelSerializer):
         fields = "__all__"
 
 
+class DaySimpleSerializer(ModelSerializer):
+    class Meta:
+        model = Day
+        fields = ("date",)
+
+
 class ScheduleSerializer(ModelSerializer):
     class Meta:
         model = Schedule
