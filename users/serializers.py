@@ -36,6 +36,8 @@ class MeUserSerializer(ModelSerializer):
             "email",
             "username",
             "avatar",
+            "address_sido_code",
+            "address_sgg_code",
         )
 
 

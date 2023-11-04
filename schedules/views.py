@@ -19,6 +19,7 @@ from rest_framework.exceptions import (
     ParseError,
     PermissionDenied,
 )
+from uuid import UUID
 from .models import Schedule, Day, Resume
 from .serializer import (
     DaySerializer,
@@ -333,3 +334,21 @@ class MyResume(APIView):
             serializer = ResumeSerializer(resume)
 
             return Response({"ok": True, "data": serializer.data})
+
+
+class UserResume(APIView):
+    def get_object(self, user_id):
+        try:
+            return Resume.objects.get(user_id=user_id)
+        except Resume.DoesNotExist:
+            return None
+
+    def get(self, request, user_id):
+        resume = self.get_object(user_id)
+        if resume:
+            serializer = HomeScheduleSerializer(resume)
+            return Response({"ok": True, "data": serializer.data})
+        else:
+            return Response(
+                {"ok": False, "data": {"erm": "The user doesn't have resume"}}
+            )
