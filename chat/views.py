@@ -111,6 +111,7 @@ class ChatRoomView(APIView):
                         "data": {
                             "opponentUsername": opponent.username,
                             "opponentAvatar": opponent.avatar,
+                            "opponentId": opponent.id,
                         },
                     }
                 )
@@ -125,6 +126,7 @@ class ChatRoomView(APIView):
                     "data": {
                         "opponentUsername": opponent.username,
                         "opponentAvatar": opponent.avatar,
+                        "opponentId": opponent.id,
                     },
                 }
             )
