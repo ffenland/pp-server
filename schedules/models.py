@@ -56,6 +56,7 @@ class Resume(CommonPKModel, CommonModel):
     )
     description = models.TextField()
     is_recruit = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
 
     @property
     def is_regular(self):

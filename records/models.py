@@ -16,7 +16,8 @@ class ResumeLike(models.Model):
     )
     resume = models.ForeignKey(
         "schedules.Resume",
-        on_delete=models.CASCADE,
+        null=True,
+        on_delete=models.SET_NULL,
     )
 
 

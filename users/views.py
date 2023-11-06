@@ -387,21 +387,23 @@ class ProfileLikeResumes(APIView):
         resume_info_list = []
         for resume_like in resume_likes:
             days_list = []
-            for day in resume_like.resume.schedule.days.all():
-                days_list.append(
-                    {
-                        "date": day.date,
-                        "am": day.am,
-                        "pm": day.pm,
-                    }
-                )
+            if resume_like.resume != None:
+                for day in resume_like.resume.schedule.days.all():
+                    days_list.append(
+                        {
+                            "date": day.date,
+                            "am": day.am,
+                            "pm": day.pm,
+                        }
+                    )
 
-            resume_info = {
-                "id": resume_like.resume.id,
-                "days": days_list,
-                "user": resume_like.resume.user.username,
-                "isRecruit": resume_like.resume.is_recruit,
-            }
-            resume_info_list.append(resume_info)
+                resume_info = {
+                    "id": resume_like.resume.id,
+                    "days": days_list,
+                    "user": resume_like.resume.user.username,
+                    "isRecruit": resume_like.resume.is_recruit,
+                    "isActive": resume_like.resume.is_active,
+                }
+                resume_info_list.append(resume_info)
 
         return Response({"ok": True, "data": {"resumes": resume_info_list}})
