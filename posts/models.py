@@ -6,7 +6,6 @@ from common.models import CommonModel, CommonPKModel
 
 
 class Post(CommonModel, CommonPKModel):
-
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -16,7 +15,6 @@ class Post(CommonModel, CommonPKModel):
     )
     kind = models.CharField(
         max_length=8,
-        
     )
     article = models.TextField()
     view_count = models.PositiveIntegerField(
