@@ -75,3 +75,36 @@ class Resume(CommonPKModel, CommonModel):
     @property
     def address_sgg_code(self):
         return self.user.address_sgg_code
+
+
+class SurveyAnswer(models.Model):
+    answer = models.CharField(max_length=10)
+
+
+class SurveyQuestion(models.Model):
+    question = models.CharField(max_length=100)
+    is_recruit = models.BooleanField(default=False)
+    answer_choice = models.ManyToManyField(
+        SurveyAnswer,
+    )
+
+
+class SurveyResult(CommonPKModel):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+    question = models.ForeignKey(
+        SurveyQuestion,
+        on_delete=models.SET_NULL,
+        null=True,
+    )
+    answer = models.ForeignKey(
+        SurveyAnswer,
+        null=True,
+        on_delete=models.SET_NULL,
+    )
+    answer_detail = models.CharField(
+        max_length=100,
+        null=True,
+    )
