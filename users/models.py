@@ -36,6 +36,9 @@ class User(AbstractUser):
         default=False,
     )
     # Account
+    nickname = models.CharField(
+        max_length=8,
+    )
     email = models.EmailField(
         unique=True,
     )

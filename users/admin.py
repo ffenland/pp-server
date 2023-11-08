@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.utils.html import mark_safe
-from .models import User
+from .models import User, UserStatus
 
 # Register your models here.
 
@@ -21,6 +21,7 @@ class CustomUserAdmin(UserAdmin):
             None,
             {
                 "fields": (
+                    "nickname",
                     "username",
                     "email",
                     "is_owner",
@@ -41,13 +42,7 @@ class CustomUserAdmin(UserAdmin):
         ),
         (
             ("약사정보"),
-            {
-                "fields": (
-                    "license_number",
-                    "college",
-                    "year_of_admission",
-                )
-            },
+            {"fields": ("license_number",)},
         ),
         (
             ("일자리 정보"),
@@ -78,9 +73,12 @@ class CustomUserAdmin(UserAdmin):
         ),
     )
     list_display = (
-        "username",
+        "nickname",
         "email",
         "license_image_display",
         "is_approved",
     )
     list_filter = ("is_approved",)
+
+
+admin.site.register(UserStatus)

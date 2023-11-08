@@ -158,7 +158,7 @@ class ResumeView(APIView):
         description = request.data.get("data").get("description")
         working_days = request.data.get("data").get("workingDays")
         schedule = find_or_create_schedule(working_days=working_days)
-        if schedule and description and len(description) > 10:
+        if schedule and description and len(description) > 12:
             schedule_id = schedule.id
             user = request.user
             obj, created = Resume.objects.update_or_create(

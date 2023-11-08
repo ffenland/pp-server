@@ -12,12 +12,4 @@ class DayAdmin(admin.ModelAdmin):
 admin.site.register(Schedule)
 
 
-class ResumeAdmin(admin.ModelAdmin):
-    readonly_fields = (
-        "address_str",
-        "address_sido_code",
-        "address_sgg_code",
-    )
-
-
-admin.site.register(Resume, ResumeAdmin)
+admin.site.register(Resume)

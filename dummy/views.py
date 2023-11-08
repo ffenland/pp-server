@@ -7,7 +7,7 @@ from rest_framework.exceptions import (
     ParseError,
     PermissionDenied,
 )
-from users.models import User
+from users.models import User, UserStatus
 from chat.models import ChatMessage, ChatRoom
 from pharmacies.models import Pharmacy, Account
 from posts.models import Post, Reply
@@ -31,25 +31,18 @@ class DummyUser(APIView):
             digits = string.digits  # 숫자 문자열 '0123456789'
             return "".join(random.choice(digits) for _ in range(length))
 
-        def create_dummy_users(num_users=50):
+        def create_dummy_users(num_users=10):
             for _ in range(num_users):
-                User.objects.create(
+                user = User.objects.create(
                     username=fake.user_name(),
-                    first_name=fake.first_name(),
-                    last_name=fake.last_name(),
                     email=fake.email(),
                     phone=generate_random_string(11),
                     naver_id=generate_random_string(5),
                     kakao_id=generate_random_string(5),
                     avatar=fake.image_url(),
                     license_number=fake.random_int(min=100000, max=999999),
-                    license_img=fake.image_url(),
-                    college=fake.word(),
-                    year_of_admission=fake.random_int(min=1900, max=2150),
-                    address_sgg_code=fake.random_int(min=10000, max=99999),
-                    address_sido=fake.city(),
-                    address_sgg=fake.city_suffix(),
                 )
+                UserStatus.objects.create(user=user)
 
         try:
             create_dummy_users()

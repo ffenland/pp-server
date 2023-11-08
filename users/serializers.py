@@ -57,6 +57,7 @@ class PrivateUserSerializer(ModelSerializer):
         model = User
         exclude = (
             "id",
+            "username",
             "password",
             "first_name",
             "last_name",
@@ -88,7 +89,7 @@ class SignupUserSerializer(ModelSerializer):
     class Meta:
         model = User
         fields = (
-            "username",
+            "nickname",
             "phone",
             "license_number",
             "avatar",
@@ -100,7 +101,7 @@ class SignupUserSerializer(ModelSerializer):
         def validate(self, data):
             # 필수 필드들을 확인하고, 하나라도 None이면 예외 발생
             required_fields = [
-                "username",
+                "nickname",
                 "license_number",
                 "address_sido_code",
                 "address_sgg_code",

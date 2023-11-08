@@ -57,21 +57,18 @@ class Resume(CommonPKModel, CommonModel):
     description = models.TextField()
     is_recruit = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
+    address_sido_code = models.CharField(
+        max_length=2,
+    )
+    address_sgg_code = models.CharField(
+        max_length=3,
+    )
+    address_str = models.CharField(
+        max_length=20,
+    )
 
     @property
     def is_regular(self):
         # Schedule에 연결된 Day 중 첫 번째 Day의 date 필드의 길이가 3이면 True, 그렇지 않으면 False 반환
         first_day = self.schedule.days.first()
         return len(first_day.date) == 3
-
-    @property
-    def address_str(self):
-        return self.user.address_str
-
-    @property
-    def address_sido_code(self):
-        return self.user.address_sido_code
-
-    @property
-    def address_sgg_code(self):
-        return self.user.address_sgg_code

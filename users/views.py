@@ -9,6 +9,7 @@ from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnl
 from rest_framework.exceptions import ParseError, NotFound, ValidationError
 from rest_framework.status import (
     HTTP_400_BAD_REQUEST,
+    HTTP_204_NO_CONTENT,
     HTTP_200_OK,
     HTTP_202_ACCEPTED,
     HTTP_201_CREATED,
@@ -51,7 +52,7 @@ def set_user_profile(user, profile):
     if profile.get("licenseImgId"):
         set_license_image(profile.get("licenseImgId"), user)
     data = {
-        "username": profile.get("username"),
+        "nickname": profile.get("nickname"),
         "phone": profile.get("phone"),
         "avatar": profile.get("avatarImgId"),
         "license_number": profile.get("licenseNum"),
@@ -72,8 +73,8 @@ def set_user_profile(user, profile):
     except ValidationError as e:
         error_messages = {}
         for field, errors in e.detail.items():
-            if field == "username":
-                error_messages["username"] = "이미 해당 닉네임은 사용중입니다."
+            if field == "nickname":
+                error_messages["nickname"] = "이미 해당 닉네임은 사용중입니다."
             if field == "phone":
                 error_messages["phone"] = "유효하지 않거나 이미 등록된 번호입니다."
             if field == "license_number":
@@ -127,7 +128,7 @@ class Signup(APIView):
 
         # is_complete True
         return Response(
-            {"ok": True, "data": {"user": user_profile.get("data")["username"]}}
+            {"ok": True, "data": {"user": user_profile.get("data")["nickname"]}}
         )
 
 
@@ -163,7 +164,8 @@ class NaverLogin(APIView):
                 except User.DoesNotExist:
                     # signup
                     user = User.objects.create(
-                        username=make_ran_username(),
+                        username=f"nvr{naver_id}",
+                        nickname=f"nvr{naver_id}",
                         email=email,
                         naver_id=naver_id,
                     )
@@ -344,13 +346,9 @@ class UserAddress(APIView):
             return Response(
                 {
                     "setted": False,
-                    "data": {
-                        "sidoCode": "11",
-                        "sggCode": "650",
-                        "address_str": "서울특별시 서초구",
-                    },
+                    "data": None,
                 },
-                status=HTTP_200_OK,
+                status=HTTP_204_NO_CONTENT,
             )
 
     def put(self, request):
