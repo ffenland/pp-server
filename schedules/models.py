@@ -72,3 +72,48 @@ class Resume(CommonPKModel, CommonModel):
         # Schedule에 연결된 Day 중 첫 번째 Day의 date 필드의 길이가 3이면 True, 그렇지 않으면 False 반환
         first_day = self.schedule.days.first()
         return len(first_day.date) == 3
+
+    @property
+    def address_str(self):
+        return self.user.address_str
+
+    @property
+    def address_sido_code(self):
+        return self.user.address_sido_code
+
+    @property
+    def address_sgg_code(self):
+        return self.user.address_sgg_code
+
+
+class SurveyAnswer(models.Model):
+    answer = models.CharField(max_length=10)
+
+
+class SurveyQuestion(models.Model):
+    question = models.CharField(max_length=100)
+    is_recruit = models.BooleanField(default=False)
+    answer_choice = models.ManyToManyField(
+        SurveyAnswer,
+    )
+
+
+class SurveyResult(CommonPKModel):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+    question = models.ForeignKey(
+        SurveyQuestion,
+        on_delete=models.SET_NULL,
+        null=True,
+    )
+    answer = models.ForeignKey(
+        SurveyAnswer,
+        null=True,
+        on_delete=models.SET_NULL,
+    )
+    answer_detail = models.CharField(
+        max_length=100,
+        null=True,
+    )
