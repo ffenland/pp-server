@@ -153,7 +153,9 @@ class ResumeView(APIView):
 
     def post(self, request):
         """Create or Update Resume"""
-
+        sido_code = request.user.address_sido_code
+        sgg_code = request.user.address_sgg_code
+        address_str = request.user.address_str
         is_recruit = request.user.is_owner
         description = request.data.get("data").get("description")
         working_days = request.data.get("data").get("workingDays")
@@ -164,8 +166,11 @@ class ResumeView(APIView):
             obj, created = Resume.objects.update_or_create(
                 user=user,
                 schedule_id=schedule_id,
-                defaults={"description": description},
+                description=description,
                 is_recruit=is_recruit,
+                address_sido_code=sido_code,
+                address_sgg_code=sgg_code,
+                address_str=address_str,
             )
 
             serializer = ResumeSerializer(obj)

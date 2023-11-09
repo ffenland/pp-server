@@ -73,18 +73,6 @@ class Resume(CommonPKModel, CommonModel):
         first_day = self.schedule.days.first()
         return len(first_day.date) == 3
 
-    @property
-    def address_str(self):
-        return self.user.address_str
-
-    @property
-    def address_sido_code(self):
-        return self.user.address_sido_code
-
-    @property
-    def address_sgg_code(self):
-        return self.user.address_sgg_code
-
 
 class SurveyAnswer(models.Model):
     answer = models.CharField(max_length=10)

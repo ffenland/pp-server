@@ -286,8 +286,10 @@ class Profile(APIView):
 
     def get(self, request):
         user = request.user
+        if not user:
+            return Response(status=HTTP_400_BAD_REQUEST)
         serializer = PrivateUserSerializer(user)
-        return Response(serializer.data)
+        return Response({"ok": True, "data": serializer.data})
 
     def put(self, request):
         # just get username, phone, avatar,

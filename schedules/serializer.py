@@ -52,10 +52,7 @@ class ResumeSerializer(ModelSerializer):
 
     class Meta:
         model = Resume
-        exclude = (
-            "description",
-            "updated_at",
-        )
+        exclude = ("updated_at",)
 
 
 class HomeScheduleSerializer(ModelSerializer):
