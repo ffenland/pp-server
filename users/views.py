@@ -321,7 +321,7 @@ class ProfileEdit(APIView):
         return Response({"ok": True, "data": serializer.data})
 
 
-class UserAddress(APIView):
+class MyAddress(APIView):
     def get(self, request):
         """get Current Address Value"""
         user = request.user
@@ -329,11 +329,11 @@ class UserAddress(APIView):
         sgg_code = user.address_sgg_code
         address_str = user.address_str
 
-        # 넷중 하나라도 None 이면 false
-        if sido_code and sgg_code:
+        # 셋중 하나라도 None 이면 false
+        if sido_code and sgg_code and address_str:
             return Response(
                 {
-                    "setted": True,
+                    "ok": True,
                     "data": {
                         "sidoCode": sido_code,
                         "sggCode": sgg_code,
@@ -345,7 +345,7 @@ class UserAddress(APIView):
         else:
             return Response(
                 {
-                    "setted": False,
+                    "ok": False,
                     "data": None,
                 },
                 status=HTTP_204_NO_CONTENT,
