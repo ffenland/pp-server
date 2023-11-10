@@ -77,7 +77,7 @@ class PublicUserSerializer(ModelSerializer):
     class Meta:
         model = User
         fields = (
-            "username",
+            "nickname",
             "id",
             "avatar",
             "is_owner",

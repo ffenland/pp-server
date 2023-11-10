@@ -400,7 +400,7 @@ class ProfileLikeResumes(APIView):
                 resume_info = {
                     "id": resume_like.resume.id,
                     "days": days_list,
-                    "user": resume_like.resume.user.username,
+                    "nickname": resume_like.resume.user.nickname,
                     "isRecruit": resume_like.resume.is_recruit,
                     "isActive": resume_like.resume.is_active,
                 }
