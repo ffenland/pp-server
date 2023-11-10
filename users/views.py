@@ -322,6 +322,9 @@ class ProfileEdit(APIView):
         serializer = ProfileEditSerializer(user)
         return Response({"ok": True, "data": serializer.data})
 
+    def put(self, request):
+        return Response({"ok": True})
+
 
 class MyAddress(APIView):
     def get(self, request):

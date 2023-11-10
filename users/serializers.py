@@ -118,7 +118,7 @@ class ProfileEditSerializer(ModelSerializer):
     class Meta:
         model = User
         fields = (
-            "username",
+            "nickname",
             "phone",
             "avatar",
         )
