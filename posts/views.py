@@ -186,3 +186,15 @@ class ReplyView(APIView):
             many=True,
         )
         return Response({"ok": True, "data": serializer.data})
+
+    def post(self, request, pk):
+        if request.data.get("postId") != pk:
+            return Response({"ok": False}, HTTP_400_BAD_REQUEST)
+        post = self.get_object(pk=pk)
+        try:
+            reply = Reply.objects.create(
+                user=request.user, article=request.data.get("replyText"), post=post
+            )
+            return Response({"ok": True, "data": {"replyId": reply.id}})
+        except:
+            return Response({"ok": False, "data": {"erm": "댓글 작성에 실패했습니다."}})

@@ -66,9 +66,12 @@ class HomeScheduleSerializer(ModelSerializer):
             "is_recruit",
             "is_regular",
             "schedule",
+            "like_count",
             "created_at",
         )
+
     def get_like_count(self, resume):
+        return resume.resumelike_set.count()
 
 
 class ProfileResumeSerializer(ModelSerializer):

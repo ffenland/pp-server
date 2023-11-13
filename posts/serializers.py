@@ -34,6 +34,18 @@ class PostSerializer(ModelSerializer):
         read_only=True,
         many=True,
     )
+    like_count = SerializerMethodField()
+    bad_count = SerializerMethodField()
+    fav_count = SerializerMethodField()
+
+    def get_like_count(self, post):
+        return post.postrecord_set.filter(kind="like").count()
+
+    def get_bad_count(self, post):
+        return post.postrecord_set.filter(kind="bad").count()
+
+    def get_fav_count(self, post):
+        return post.postrecord_set.filter(kind="fav").count()
 
     class Meta:
         model = Post
@@ -45,4 +57,4 @@ class ReplySerializer(ModelSerializer):
 
     class Meta:
         model = Reply
-        fields = ("user", "article", "created_at", "reply")
+        fields = ("user", "article", "created_at", "reply", "id")
