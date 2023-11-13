@@ -57,6 +57,7 @@ class ResumeSerializer(ModelSerializer):
 
 class HomeScheduleSerializer(ModelSerializer):
     schedule = ScheduleWithDaysSerializer()
+    like_count = SerializerMethodField()
 
     class Meta:
         model = Resume
@@ -67,6 +68,7 @@ class HomeScheduleSerializer(ModelSerializer):
             "schedule",
             "created_at",
         )
+    def get_like_count(self, resume):
 
 
 class ProfileResumeSerializer(ModelSerializer):
