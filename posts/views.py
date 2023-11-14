@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import logging
 from django.utils.timezone import make_aware
 from django.db.models import Q, F
 from django.utils.dateformat import DateFormat
@@ -33,6 +34,8 @@ from .serializers import (
     PostCreateSerializer,
 )
 from medias.models import Photo
+
+logger = logging.getLogger(__name__)
 
 
 class PostListPagination(PageNumberPagination):
@@ -170,7 +173,7 @@ class PostCountView(APIView):
         return Response({"ok": True}, status=HTTP_202_ACCEPTED)
 
 
-class ReplyView(APIView):
+class PostReplyView(APIView):
     def get_object(self, pk):
         try:
             post = Post.objects.get(pk=pk)
@@ -195,3 +198,20 @@ class ReplyView(APIView):
             return Response({"ok": True, "data": {"replyId": reply.id}})
         except:
             return Response({"ok": False, "data": {"erm": "댓글 작성에 실패했습니다."}})
+
+
+class ReplyView(APIView):
+    def put(self, request):
+        reply_id = request.data.get("replyId")
+        article = request.data.get("article")
+        try:
+            reply_object = Reply.objects.get(id=reply_id)
+            reply_object.article = article
+            reply_object.save()
+            return Response({"ok": True})
+        except Exception as e:
+            # logger.exception(f"An error occurred: {str(e)}")
+            return Response({"ok": False, "data": {"erm": "Reply Id error"}})
+
+    def delete(self, request):
+        return Response({"ok": True}, status=HTTP_204_NO_CONTENT)

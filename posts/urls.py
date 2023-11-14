@@ -6,5 +6,6 @@ urlpatterns = [
     path("create/", views.PostCreateView.as_view()),
     path("detail/<str:pk>/", views.PostDetailView.as_view()),
     path("detail/<str:pk>/count/", views.PostCountView.as_view()),
-    path("detail/<str:pk>/reply/", views.ReplyView.as_view()),
+    path("detail/<str:pk>/reply/", views.PostReplyView.as_view()),
+    path("reply/", views.ReplyView.as_view()),
 ]
