@@ -181,10 +181,7 @@ class ReplyView(APIView):
     def get(self, request, pk):
         post = self.get_object(pk=pk)
         replys = Reply.objects.filter(post=post).order_by("-created_at")
-        serializer = ReplySerializer(
-            replys,
-            many=True,
-        )
+        serializer = ReplySerializer(replys, many=True, context={"request": request})
         return Response({"ok": True, "data": serializer.data})
 
     def post(self, request, pk):

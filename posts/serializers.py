@@ -54,7 +54,12 @@ class PostSerializer(ModelSerializer):
 
 class ReplySerializer(ModelSerializer):
     user = TinyUserSerializer()
+    is_me = SerializerMethodField()
+
+    def get_is_me(self, reply):
+        request = self.context.get("request")
+        return request.user == reply.user
 
     class Meta:
         model = Reply
-        fields = ("user", "article", "created_at", "reply", "id")
+        fields = ("user", "article", "created_at", "reply", "id", "is_me")
