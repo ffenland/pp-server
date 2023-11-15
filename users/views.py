@@ -1,5 +1,6 @@
 from django.contrib.auth import authenticate, login, logout
 from django.conf import settings
+from django.utils import timezone
 from django.utils.crypto import get_random_string
 from django.db import transaction
 from rest_framework.response import Response
@@ -15,6 +16,9 @@ from rest_framework.status import (
     HTTP_201_CREATED,
 )
 
+import random
+import requests
+
 from .serializers import (
     MeUserSerializer,
     PublicUserSerializer,
@@ -23,13 +27,12 @@ from .serializers import (
     MiniProfileSerializer,
     ProfileEditSerializer,
 )
-from .models import User, UserStatus
+from .models import User, UserStatus, MessageToken
 from schedules.models import Resume
 from schedules.serializer import DaySimpleSerializer
 from records.models import ResumeLike
 from medias.models import Photo
-from pharmacies.models import Pharmacy
-import requests
+from common.sms import send_verification
 
 
 ## util
@@ -410,3 +413,53 @@ class ProfileLikeResumes(APIView):
                 resume_info_list.append(resume_info)
 
         return Response({"ok": True, "data": {"resumes": resume_info_list}})
+
+
+class Token(APIView):
+    def get(self, request):
+        phone = request.query_params.get("phone")
+        if not phone:
+            return Response(
+                {"ok": False, "data": {"ems": "폰 번호가 올바르지 않습니다."}},
+                status=HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            existing_token = MessageToken.objects.filter(
+                user=request.user, phone_number=phone
+            ).first()
+            if existing_token and existing_token.expires_at > timezone.now():
+                # 만료 시간이 양수인 경우 (아직 유효한 토큰이 있는 경우)
+                delta = existing_token.expires_at - timezone.now()
+                return Response(
+                    {
+                        "ok": False,
+                        "data": {
+                            "ems": f"이미 생성된 토큰이 있습니다. {delta.seconds // 60}분 {delta.seconds % 60}초 후에 다시 시도하세요."
+                        },
+                    },
+                    status=HTTP_400_BAD_REQUEST,
+                )
+
+            verification_code = str(random.randint(100000, 999999))
+            token = MessageToken.objects.create(
+                user=request.user,
+                phone_number=phone,
+                verification_code=verification_code,
+            )
+            result = send_verification(phone, token.verification_code)
+            if not result:
+                return Response({"ok": False, "data": {"ems": "인증문자 발신에 실패했습니다."}})
+            return Response(
+                {
+                    "ok": True,
+                }
+            )
+
+        except Exception as e:
+            return Response({"ok": False, "data": {"ems": "알 수 없는 오류가 발생했습니다."}})
+
+    def post(self, request):
+        # 사용자로 부터 토큰값을 받은 경우.
+        # 토큰값 일치 = 토큰삭제 및 phone 정보 등록
+        pass

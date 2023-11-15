@@ -12,6 +12,7 @@ from .views import (
     Signup,
     PublicUser,
     ProfileLikeResumes,
+    Token,
 )
 
 urlpatterns = [
@@ -26,5 +27,6 @@ urlpatterns = [
     path("profile/address/", MyAddress.as_view()),
     path("profile/like-resumes/", ProfileLikeResumes.as_view()),
     path("resume/", UserResume.as_view()),
+    path("get-token/", Token.as_view()),
     path("@<str:id>/", PublicUser.as_view()),
 ]

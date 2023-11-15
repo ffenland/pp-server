@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.utils.html import mark_safe
-from .models import User, UserStatus
+from .models import User, UserStatus, MessageToken
 
 # Register your models here.
 
@@ -83,7 +83,7 @@ class CustomUserAdmin(UserAdmin):
 
 
 @admin.register(UserStatus)
-class CustomUserAdmin(admin.ModelAdmin):
+class UserStatusAdmin(admin.ModelAdmin):
     list_display = (
         "user_username",
         "user_nickname",
@@ -96,3 +96,8 @@ class CustomUserAdmin(admin.ModelAdmin):
         return obj.user.username
 
     user_nickname.short_description = "User Nickname"
+
+
+@admin.register(MessageToken)
+class MessageTokenAdmin(admin.ModelAdmin):
+    pass

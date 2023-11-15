@@ -190,3 +190,6 @@ KAKAO_REDIRECT_URI = os.getenv("KAKAO_REDIRECT_URI")
 
 CF_ID = os.getenv("CF_ID")
 CF_TOKEN = os.getenv("CF_TOKEN")
+
+ALIGO_API_KEY = os.getenv("ALIGO_API_KEY")
+ALIGO_USER_ID = os.getenv("ALIGO_USER_ID")

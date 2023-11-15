@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.utils import timezone
 import uuid
 from common.models import CommonPKModel
 from common.utils import cf_id_to_url
@@ -121,3 +122,21 @@ class UserSchool(CommonPKModel):
         validators=[MinValueValidator(1900), MaxValueValidator(2150)],
         default=1900,
     )
+
+
+class MessageToken(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+    phone_number = models.CharField(max_length=20)  # 휴대폰 번호를 저장하는 필드
+    verification_code = models.CharField(max_length=6)  # 인증번호를 저장하는 필드
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+    expires_at = models.DateTimeField()  # 인증번호의 만료 시간을 저장하는 필드
+
+    def save(self, *args, **kwargs):
+        # 모델 저장 시 인증번호의 만료 시간을 5분 후로 설정
+        self.expires_at = timezone.now() + timezone.timedelta(minutes=5)
+        super().save(*args, **kwargs)
