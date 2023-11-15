@@ -73,6 +73,7 @@ class CustomUserAdmin(UserAdmin):
         ),
     )
     list_display = (
+        "username",
         "nickname",
         "email",
         "license_image_display",
@@ -81,4 +82,17 @@ class CustomUserAdmin(UserAdmin):
     list_filter = ("is_approved",)
 
 
-admin.site.register(UserStatus)
+@admin.register(UserStatus)
+class CustomUserAdmin(admin.ModelAdmin):
+    list_display = (
+        "user_username",
+        "user_nickname",
+    )
+
+    def user_nickname(self, obj):
+        return obj.user.nickname
+
+    def user_username(self, obj):
+        return obj.user.username
+
+    user_nickname.short_description = "User Nickname"
