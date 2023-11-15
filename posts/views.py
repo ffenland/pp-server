@@ -214,4 +214,14 @@ class ReplyView(APIView):
             return Response({"ok": False, "data": {"erm": "Reply Id error"}})
 
     def delete(self, request):
-        return Response({"ok": True}, status=HTTP_204_NO_CONTENT)
+        reply_id = request.data.get("replyId")
+
+        try:
+            reply_object = Reply.objects.get(id=reply_id)
+            reply_object.delete()
+            return Response({"ok": True}, status=HTTP_204_NO_CONTENT)
+        except Exception as e:
+            return Response(
+                {"ok": False, "data": {"erm": "Reply Id error"}},
+                status=HTTP_400_BAD_REQUEST,
+            )

@@ -40,7 +40,7 @@ class ChatView(APIView):
             response_data.append(
                 {
                     "partner": {
-                        "username": partner.username,
+                        "nickname": partner.nickname,
                         "avatar": partner.avatar,
                     },
                     "last_message": {
@@ -107,13 +107,14 @@ class ChatRoomView(APIView):
             ]:
                 return Response(
                     {
-                        "ok": True,
+                        "ok": False,
                         "data": {
-                            "opponentUsername": opponent.username,
-                            "opponentAvatar": opponent.avatar,
-                            "opponentId": opponent.id,
+                            "opponentNickname": "",
+                            "opponentAvatar": "",
+                            "opponentId": "",
                         },
-                    }
+                    },
+                    status=HTTP_400_BAD_REQUEST,
                 )
             opponent = (
                 chatroom.first_user
@@ -124,7 +125,7 @@ class ChatRoomView(APIView):
                 {
                     "ok": True,
                     "data": {
-                        "opponentUsername": opponent.username,
+                        "opponentNickname": opponent.nickname,
                         "opponentAvatar": opponent.avatar,
                         "opponentId": opponent.id,
                     },
@@ -132,7 +133,15 @@ class ChatRoomView(APIView):
             )
         except:
             return Response(
-                {"ok": False},
+                {
+                    "ok": False,
+                    "data": {
+                        "opponentNickname": "",
+                        "opponentAvatar": "",
+                        "opponentId": "",
+                    },
+                },
+                status=HTTP_400_BAD_REQUEST,
             )
 
 
