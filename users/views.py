@@ -462,4 +462,20 @@ class Token(APIView):
     def post(self, request):
         # 사용자로 부터 토큰값을 받은 경우.
         # 토큰값 일치 = 토큰삭제 및 phone 정보 등록
-        pass
+        verification_code = request.data.get("verificationCode")
+        phone_number = request.data.get("phoneNumber")
+        print(verification_code)
+        print(phone_number)
+        try:
+            token = MessageToken.objects.get(
+                phone_number=phone_number, user=request.user
+            )
+            if token.verification_code == verification_code:
+                user = User.objects.get(id=request.user.id)
+                user.phone = phone_number
+                user.save()
+                return Response({"ok": True})
+            else:
+                return Response({"ok": False})
+        except MessageToken.DoesNotExist:
+            return Response({"ok": False})
